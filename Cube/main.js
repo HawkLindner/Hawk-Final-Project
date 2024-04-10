@@ -1,40 +1,27 @@
 import * as THREE from 'three';
 
-function main(){
-        const canvas = document.getElementById("c");
-        const renderer = new THREE.WebGLRenderer({antias: true,canvas});
+const scene = new THREE.Scene();
+const canvas = document.getElementById("c");
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-        //camera   
-        const fov = 75;
-        const aspect = 800/600;
-        const near = 0.1;
-        const far = 5;
-        const camera = new THREE.PerspectiveCamera(fov,aspect,near,far);
-        camera.position.z = 2;
+const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvas});
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
 
-        //create scene
-        const scene = new THREE.Scene();
-        //box geometry
-        const boxWidth = 10;
-        const boxHeight = 10;
-        const boxDepth = 10;
-        const geometry = new THREE.BoxGeometry(boxWidth,boxHeight,boxDepth);
+const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const cube = new THREE.Mesh( geometry, material );
+scene.add( cube );
 
-        //color and material
+camera.position.z = 5;
 
-        const material = new THREE.MeshBasicMaterial({color: '00ff83'});
-        const cube = new THREE.Mesh(geometry,material);
-        scene.add(cube);
+function animate() {
+	requestAnimationFrame( animate );
 
-        //renderer
-        renderer.render(scene,camera);
+	cube.rotation.x += 0.01;
+	cube.rotation.y += 0.01;
+
+	renderer.render( scene, camera );
 }
 
-function render(time){
-    time *= 0.001;
-    cube.rotation.x = time;
-    cube.rotation.y = time;
-    renderer.render(scene,camera);
-    requestAnimationFrame(render);
-}
-requestAnimationFrame(render);
+animate();
