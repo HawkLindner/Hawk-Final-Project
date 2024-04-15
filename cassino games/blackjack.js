@@ -37,7 +37,6 @@ function shuffleDeck(){
         let temp = deck[i];
         deck[i] = deck[j];
         deck[j] = temp;
-        console.log("shuffle");
     }
     //(deck);
 }
@@ -53,7 +52,6 @@ function clearTable(){
     }
     
     cardCount = 1;
-    //console.log("in");
     delt = document.createElement("img");
     winText.innerText = "";
     userSum = 0;
@@ -65,9 +63,10 @@ function clearTable(){
     stayBtn.disabled = false;
     buildDeck();
     shuffleDeck();
-    console.log("Clear");
 }
+userCheck = true;
 function hit(){
+    
     onTable[cardCount] = document.createElement("img");
     onTable[cardCount].id = deck.pop();
     onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";
@@ -79,19 +78,11 @@ function hit(){
     userSum = parseInt(userSum) + parseInt(onTable[cardCount].value); 
     playerHand.append(onTable[cardCount]);
 
-    rdCount++;
+    cardCount++;
+    userCheck = check();
+}
     
-}
-function checkWin(){
-    if(userSum == 21){
-        onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
-        winText.append("You win!");
-        
-    }
-    else if(dealerSum > userSum && dealerSum <22){
-        //dealerwins
-    }
-}
+
 //creating the game
 
 //dealers first card needs a value, and needs to be set to hidden.
@@ -113,7 +104,6 @@ function startGame(){
         dealerAce = true;
     }
     dealerSum = onTable[cardCount].value;
-    console.log(onTable[cardCount].id);
     dealerHand.append(onTable[cardCount]);
     cardCount++;
     
@@ -155,7 +145,7 @@ function startGame(){
     dealerSum = 1*onTable[1].value + 1*onTable[3].value;
     userSum = 1*onTable[2].value + 1*onTable[4].value;
     
-    console.log(userSum);
+
     if(dealerSum == 21){
         onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
         if(userSum == 21){
@@ -169,14 +159,12 @@ function startGame(){
         onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
         winText.append("You win!");
     }
-    //console.log(cardCount);
+
 
 }
 //For next log on we need to finish up with setting up clear, hit and the score tracking
 function checkValue(card){
-    console.log(card);
     let value = card.id.split("-");
-    console.log(value);
     if(isNaN(value[0])){
         if(value[0] === 'A'){
             return card.value = 11;
@@ -201,11 +189,12 @@ function checkBust(value){
 }
 let dealerCheck = true;
 function dealerAuto(){
+    userCheck = false;
     hitBtn.disabled = true;
     stayBtn.disabled = true;
     stay = true;
     onTable[1].src = "/cassino games/cards/"+onTable[1].id+ ".png";
-    while(dealerCheck == true){
+    
         onTable[cardCount] = document.createElement("img");
         onTable[cardCount].id = deck.pop();
         onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";
@@ -213,13 +202,11 @@ function dealerAuto(){
         if(checkAce === 11){
             dealerAce = true;
         }
-        console.log("ace Check " + checkAce);
         onTable[cardCount].value = checkAce;
         dealerSum = parseInt(dealerSum) + parseInt(onTable[cardCount].value);
         dealerHand.append(onTable[cardCount]);
         cardCount++;
-        dealerCheck = check();
-        }
+      
 }
 
 
@@ -233,7 +220,7 @@ function check(){
     console.log(dealerSum + " Dealer");
     console.log(stay);
     //for user bust
-    if(userSum > 21 && stay == true){
+    if(userSum > 21 && stay == false){
         if(userAce == true){
             userSum = parseInt(userSum) - 10;
             userAce = false;
@@ -244,15 +231,19 @@ function check(){
         gameOn = false;
         return false;
     }
-    else if(userSum > dealerSum && dealerSum < 21 && stay== false )
+    else if(userSum > dealerSum && dealerSum < 21 && stay== true )
     {
         winText.append("User Wins! " + userSum + " is more than " + dealerSum);
+        return false;
+    }
+    else if(dealerSum > userSum && dealerSum < 21 && stay == true){
+        winText.append("House Wins!!!");
         return false;
     }
 
 
     //for dealer
-    else if(dealerSum > 22 && stay == true){
+    else if(dealerSum > 21 && stay == true){
         winText.append("User wins! House bust!");
         return false;
     }
