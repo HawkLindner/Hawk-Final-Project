@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player1</title>
+</head>
+<body>
+    <button id="getDeck">Want the Deck?</button>
+    <span id="helloText"></span>
+
+
+    <button id="start">Start?</button>
+    <span id="Dcards"></span>
+    <br>
+    <span id="Pcards"></span>
+
+
+    
+    <script>
+        let userCards;
+        const getDeckButton = document.getElementById("getDeck");
+
+        getDeckButton.addEventListener("click", async () => {
+        try {
+        const response = await fetch("http://localhost:5000/deck");
+        const data = await response.text();
+        console.log(data);
+        } catch (error) {
+        console.error("Error:", error);
+    }
+    });
+        let Pcards = document.getElementById("Pcards");
+        let card1;
+        let card2;
+        
+
+
+        const startBtn = document.getElementById("start");
+        startBtn.addEventListener("click",async() =>{
+            try{
+                const response = await fetch("http://localhost:5000/start");
+                userCards = await response.json();
+                card1 = userCards.card1;
+                card2 = userCards.card2;
+                
+                console.log(card1 + " " + card2);
+            }
+            catch(error){
+                console.error("Error:",error);
+            }
+            startBtn.disabled = true;
+            Pcards.append("/cassino games/cards/"+card1)
+        })
+    </script>
+
+<!-- <script src = "server.js" defer></script> -->
+</body>
+</html>
