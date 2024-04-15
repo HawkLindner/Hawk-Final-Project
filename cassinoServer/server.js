@@ -10,6 +10,7 @@ let userCards;
 shuffleDeck();
 console.log(deck);  
 
+
 //this is called when the user hits shuffle
 app.get("/deck",(req,res) =>{
     res.type("json");
@@ -21,10 +22,18 @@ app.get("/start",(req,res) =>{
         "card1" : deck.pop(),
         "card2" : deck.pop()
     }
+    dealer();
     res.type("json");
     res.send(userCards);
 });
 
+function dealer(){
+    dealerCards = {
+        "card1" : deck.pop(),
+        "card2" : deck.pop()
+    }
+
+}
 
 
 function shuffleDeck(){
