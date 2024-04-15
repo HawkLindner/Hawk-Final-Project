@@ -13,6 +13,8 @@ let canHit = true;
 let onTable = [];
 let cardCount = 1;
 let delt;
+let stay = false;
+let win = false; //false if house wins
 let playerHand = document.getElementById("pCards");
 let dealerHand = document.getElementById("dCards");
 let winText = document.getElementById("winnerText");
@@ -41,7 +43,8 @@ function shuffleDeck(){
 }
 function clearTable(){
     let dealerCards = document.getElementById("dCards");
-    let userCards = document.getElementById("pCards")
+    let userCards = document.getElementById("pCards");
+    stay = false;
     while(dealerCards.firstChild){
         dealerCards.removeChild(dealerCards.firstChild);
     }
@@ -55,13 +58,17 @@ function clearTable(){
     winText.innerText = "";
     userSum = 0;
     dealerSum = 0;
+    startBtn.disabled = false;
+    shuffleBtn.disabled = false;
+    hitBtn.disabled = true;
+    clearBtn.disabled = true;
+    stayBtn.disabled = false;
     buildDeck();
     shuffleDeck();
     console.log("Clear");
 }
 function hit(){
     onTable[cardCount] = document.createElement("img");
-    //to hit we want to add cards to user hand
     onTable[cardCount].id = deck.pop();
     onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";
     checkAce = checkValue(onTable[cardCount]);
@@ -72,17 +79,14 @@ function hit(){
     userSum = parseInt(userSum) + parseInt(onTable[cardCount].value); 
     playerHand.append(onTable[cardCount]);
 
-    if(checkWin() == false){
-        hitBtn.disabled = true;
-    }
-    console.log(userSum);
-    cardCount++;
-    console.log("Hit");
+    rdCount++;
     
 }
 function checkWin(){
     if(userSum == 21){
-        //user Wins
+        onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
+        winText.append("You win!");
+        
     }
     else if(dealerSum > userSum && dealerSum <22){
         //dealerwins
@@ -95,6 +99,12 @@ function checkWin(){
 //then the dealer gets one card showing
 //then the player gets one card showing
 function startGame(){
+    startBtn.disabled = true;
+    shuffleBtn.disabled = true;
+    clearBtn.disabled = false;
+    hitBtn.disabled = false;
+    stayBtn.disabled = false;
+    stay = false;
     onTable[cardCount] = document.createElement("img");
     onTable[cardCount].src = "BackOfCard.jpg";
     onTable[cardCount].id = deck.pop();
@@ -189,25 +199,135 @@ function checkBust(value){
         return true;
     }
 }
+let dealerCheck = true;
+function dealerAuto(){
+    hitBtn.disabled = true;
+    stayBtn.disabled = true;
+    stay = true;
+    onTable[1].src = "/cassino games/cards/"+onTable[1].id+ ".png";
+    while(dealerCheck == true){
+        onTable[cardCount] = document.createElement("img");
+        onTable[cardCount].id = deck.pop();
+        onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";
+        checkAce = checkValue(onTable[cardCount]);
+        if(checkAce === 11){
+            dealerAce = true;
+        }
+        console.log("ace Check " + checkAce);
+        onTable[cardCount].value = checkAce;
+        dealerSum = parseInt(dealerSum) + parseInt(onTable[cardCount].value);
+        dealerHand.append(onTable[cardCount]);
+        cardCount++;
+        dealerCheck = check();
+        }
+}
 
+
+//to calculate the winner we need to first check to see if anyone has 21 off the start. We also need a variable
+//to determine if the match is over or not. If the match is over we need to disable the hit button. If we dont have
+//a win we just continue with waht we have so far. Here we check to see if the user has 21, if the user does not have 21 then 
+//we go to the dealer Auto and play the dealer auto until the dealer has atleast 17 
+
+function check(){
+    console.log(userSum);
+    console.log(dealerSum + " Dealer");
+    console.log(stay);
+    //for user bust
+    if(userSum > 21 && stay == true){
+        if(userAce == true){
+            userSum = parseInt(userSum) - 10;
+            userAce = false;
+            return true;
+        }
+        onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
+        winText.append("House wins...You busted fool");
+        gameOn = false;
+        return false;
+    }
+    else if(userSum > dealerSum && dealerSum < 21 && stay== false )
+    {
+        winText.append("User Wins! " + userSum + " is more than " + dealerSum);
+        return false;
+    }
+
+
+    //for dealer
+    else if(dealerSum > 22 && stay == true){
+        winText.append("User wins! House bust!");
+        return false;
+    }
+    else if(userSum == dealerSum && stay == true){
+        winText.append("Draw, money back");
+        return false;
+    }
+    else if(dealerSum == 21 && stay == true){
+        winText.append("House wins... Blackjack");
+        return false;
+    }
+    else if(dealerSum > userSum && dealerSum < 22 && stay == true){
+        winText.append("House Wins, " + dealerSum + " is more than " + userSum);
+        return false;
+    }
+    else if(dealerSum < 17 && dealerSum < 22 && stay == true){
+        return true;
+    }
+    // else if(dealerSum > userSum && dealerSum < 22){
+    //     winText.append("")
+    // }
+
+
+
+
+
+
+
+    
+   
+    // if(stay == true && dealerSum > 21){
+    //     if(dealerAce == true){
+    //         dealerSum = parseInt(dealerSum) - 10;
+    //         dealerAce = false;
+    //         console.log(dealerSum);
+    //         console.log(2);
+    //         return true;
+            
+    //     }
+    //     else{
+    //         winTextText.append("test test")
+    //         console.log(3);
+    //         return false;
+    //     }
+    // }
+    // else if(dealerSum < 17 && dealerSum < 22  && stay == true){
+    //     winText.append("House wins... " + {dealerSum} + "is more than " + {userSum});
+    //     console.log(4);
+    //     return false;
+    // }
+}
 
 window.onload = function(){
     shuffleDeck();
+    startBtn.disabled = false;
+    hitBtn.disabled = true;
+    clearBtn.disabled = true;
+    stayBtn.disabled = true;
+    shuffleBtn.disabled = false;
 }
 
 let shuffleBtn = document.getElementById("shuffle");
 shuffleBtn.addEventListener("click",shuffleDeck);
 
-let clear = document.getElementById("clear");
-clear.addEventListener("click",clearTable);
+let clearBtn = document.getElementById("clear");
+clearBtn.addEventListener("click",clearTable);
 
 let hitBtn = document.getElementById("hit");
 hitBtn.addEventListener("click",hit);
 
-let start = document.getElementById("start");
-start.addEventListener("click",startGame);
+let startBtn = document.getElementById("start");
+startBtn.addEventListener("click",startGame);
 
-
+let stayBtn = document.getElementById("stay");
+stayBtn.addEventListener("click",dealerAuto);
 
 
 
