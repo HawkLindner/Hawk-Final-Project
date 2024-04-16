@@ -35,39 +35,84 @@
     
     <script>
         let userCards;
+        let userAce = false;
+        let card1;
+        let card2;
+        let userScore = 0;
         let onTable =[];
         let count = 0;
         const shuffleBtn = document.getElementById("shuffle");
         const clearBtn = document.getElementById("clear");
+        let Pcards = document.getElementById("Pcards");
 
-
+        async function checkScore(){
+            userScore = 0;
+            let i = 0;
+            while(i < count){
+                let value = onTable[i].id.split("-"); //splits the card into an arr of [J, C] or [6, D]
+                if(isNaN(value[0])){            //if NaN, then its a K, J, Q, or Ace
+                    if(value[0] === 'A'){       //if value is A, then return 11 and that will set ace check to true
+                        userAce = true;
+                        onTable[i].value = 11;
+                    }
+                    else{onTable[i].value = 10}    //if its not the ace then we will return a 10 since all of them have the same value
+                }
+                else{
+                    onTable[i].value = value[0];   //if its NaN, just return the value of the number
+                }
+                userScore += parseInt(onTable[i].value);
+                i++;
+            }
+            let postData = {  "sum" : parseInt(userScore),
+                                "ace" : userAce};
+            console.log (" 1");  
+            fetch("http://localhost:5000/checkScore",{
+                method : "POST",
+                body: JSON.stringify(postData),
+            })
+            .then(console.log(postData + " 2"))
+            .then(response =>{
+                if(!response.ok){
+                    console.log("over 21");
+                    clearBtn.disabled = false;
+                }
+                else{
+                    console.log(userScore);
+                    console.log(userAce);
+                }
+            })
+        }
         clearBtn.addEventListener("click",async () => {
+            clearBtn.disabled = true;
+            startBtn.disabled = false;
+            shuffleBtn.disabled = false;
             try{
                 const response = await fetch("http://localhost:5000/clear");
                 const check = await response.text();
                 console.log(check);
             }
             catch (error){
-                
+                console.log(error);
             }
-        })
+            while(Pcards.firstChild){
+                Pcards.removeChild(Pcards.firstChild);
+            }
+        });
         shuffleBtn.addEventListener("click", async () => {
         try {
-        const response = await fetch("http://localhost:5000/deck");
-        const data = await response.text();
-        console.log(data);
+            const response = await fetch("http://localhost:5000/deck");
+            const data = await response.text();
+            console.log(data);
         } catch (error) {
-        console.error("Error:", error);
-    }
-    });
-        let Pcards = document.getElementById("Pcards");
-        let card1;
-        let card2;
-        
-
+            console.error("Error:", error);
+        }
+        });
 
         const startBtn = document.getElementById("start");
         startBtn.addEventListener("click",async() =>{
+            startBtn.disabled = true;
+            clearBtn.disabled = false;
+            shuffleBtn.disabled = true;
             try{
                 const response = await fetch("http://localhost:5000/start");
                 userCards = await response.json();
@@ -83,11 +128,15 @@
             shuffleBtn.disabled = true;
             onTable[count] = document.createElement("img");
             onTable[count].src = "/cassinoServer/cards/"+card1+".png";
+            onTable[count].id = card1;
             Pcards.append(onTable[count]);
             count++;
             onTable[count] = document.createElement("img");
             onTable[count].src = "/cassinoServer/cards/"+card2+".png";
+            onTable[count].id = card2;
             Pcards.append(onTable[count]);
+            count++;
+            checkScore();
         });
     </script>
 </body>

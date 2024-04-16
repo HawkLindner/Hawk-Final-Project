@@ -3,14 +3,25 @@ const express = require("express");
 const app = express();
 const port = 5000;
 app.use(cors()); // Enable CORS for all routes
+app.use(express.json());
 
 //we start out by getting the deck and shuffling the deck
 let deck;
 let userCards;
+let sum;
+let ace;
+let dealerSum;
 shuffleDeck();
 console.log(deck);  
 
-
+app.post("/checkScore",(req,res)=>{
+    console.log(req.body.sum + " Body");
+    let {sum, ace} = req.body;
+    console.log("Sum " + req.body.sum);
+    console.log("Ace " + req.body.ace);
+    res.type("text");
+    res.sendStatus(200);
+});
 //this is called when the user hits shuffle
 app.get("/deck",(req,res) =>{
     res.type("json");
@@ -22,11 +33,19 @@ app.get("/start",(req,res) =>{
         "card1" : deck.pop(),
         "card2" : deck.pop()
     }
-    dealer();
     res.type("json");
     res.send(userCards);
 });
 
+app.get("/clear",(req,res) =>{
+    delete userCards;
+    delete dealerCards;
+    res.type("text");
+    res.sendStatus(200);
+});
+function check(){
+    
+}
 function dealer(){
     dealerCards = {
         "card1" : deck.pop(),
