@@ -47,12 +47,54 @@ function buildDeck(){
     return deck;
 }
 
+//need to add the ace functionalaity
+function isLoss(sum){
+    if(sum > 21){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
+function isWinning(pSum, dSum){
+    if(pSum > dSum && (pSum < 22 || dSum < 22)){
+        return true;//player is winning
+    }
+    else if((pSum < 22 || dSum < 22 )&& pSum <= dSum){
+        return false;//player is losing
+    }
+}
+
+function checkSum(card,sum){
+    
+    let value = card.split("-");
+    if(isNaN(value[0])){
+        if(value[0] === "A"){
+            value[0] = 11;
+            value[1] = 1;
+            return value;
+        }
+        else{
+            value[0] = 10;
+        }
+    }
+    return value[0];
+}
 //server is going to do all of the work.
 
 //Start the game by the server dealing our 2 cards to the playe and 2 cards to dealser
 let userCards;
 let dealerCards;
+let dealer;
+let dealerSum = 0;
+let sum = 0;
+let count = 2;
+let userStay = false;
+let isPlayerWinning = true;
+let isLosing = false;
+
+
 app.get("/start",(req,res) =>{
     deck = shuffleDeck();
     userCards = {
@@ -67,8 +109,24 @@ app.get("/start",(req,res) =>{
    res.send(200);
 });
 
-let dealer;
-let dealerSum;
+app.get("/userPage",(req,res)=>{
+    //here we will update the users page
+    user = {
+        card1 : {
+            src : "/cassinoServer/cards/"+userCards.card1+".png",
+            id : userCards.card1,
+        },
+        card2 : {
+            src : "/cassinoServer/cards/"+userCards.card2+".png",
+            id : userCards.card2,
+        }.
+        userSum = 0,
+    }
+    userSum = parseInt(checkSum((dealer.card1.id),0));
+    userSum += parseInt(checkSum((dealer.card2.id),userSum));
+    user.userSum = userSum;
+});
+
 app.get("/dealerPage",(req,res) =>{
         dealer = {
             card1 : {
@@ -81,12 +139,32 @@ app.get("/dealerPage",(req,res) =>{
                 id : dealerCards.card2,
                 visability : true,
             },
-            dealerSum : dealerSum
+            dealerTotalSum : 0,
+            dealerHiddenSum: 0,
+            isPlayerWinning : true,
         };
+        sum = parseInt(checkSum((dealer.card1.id),dealerSum));
+        sum += parseInt(checkSum((dealer.card2.id),sum));
+        dealer.dealerTotalSum = sum;
+        dealer.dealerHiddenSum = parseInt(checkSum((dealer.card2.id),0)); 
+        
+
+        
         res.type("json");
         res.send(dealer);
 });
+function exit(){
 
+}
+app.get("/dealerUpdate",(req,res) =>{
+    if(userStay == true){
+        if(dealerTotalSum < 17){}
+    
+}});
+
+app.get("/hit",(req,res)=>{
+
+});
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

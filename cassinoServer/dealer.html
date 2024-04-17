@@ -9,8 +9,10 @@
 <body>
     <h1>Dealer</h1>
     <div id="cards">
-        <span id= "Dscore"></span>
+        <span id= "score"></span>
         <li id = "table"></li>
+    </div>
+    <div id="endGameMsg">
 
     </div>
     <button type = "button" id = "start">Start</button>
@@ -26,6 +28,7 @@
         startBtn = document.getElementById("start");
         startBtn.addEventListener("click",start);
         let table = document.getElementById("table");
+        let scoreOutput = document.getElementById("score");
             
         async function statusCheck(res){
             if(!res.ok){
@@ -40,12 +43,12 @@
             dealer = responseData;
                 card1 = createCard(dealer.card1);
                 card2 = createCard(dealer.card2);
-                console.log(dealer.card1);
+                score.innerText = dealer.dealerHiddenSum + " +???";
                 table.append(card1,card2);
         }
-        let go = false;
         async function start(){
-                await fetch("http://localhost:5000/start")// Await the fetch request
+                startBtn.disabled = true;
+                await fetch("http://localhost:5000/start")//starts the game
                 .then(statusCheck)
                 .catch(handleError);
                 await fetch("http://localhost:5000/dealerPage")
@@ -59,10 +62,38 @@
     };
    function createCard(card){
         let img = document.createElement("img");
-        img.src = card.src;
-        console.log(img.src);
+        if(card.visability == false){
+            //this is for the first card
+            img.src = "/cassinoServer/BackOfCard.jpg"
+        }
+        else{
+            img.src = card.src;
+        }
         return img;
    }
+
+   //set up timer 
+//    if(stay == true){
+//    const intervalId = setInterval(updateDealer(),5000);
+//    }
+//    function updateData(responseData){
+//         dealer = responseData;
+//    }
+// // To stop the interval after some time:
+//     setTimeout(() => {
+//     clearInterval(intervalId); // Stop the interval
+//     }, 10000); // Stop after 10 seconds
+//    async function updateDealer(){
+//     await fetch("http://localhost:5000/dealerUpdate")
+//         .then(statusCheck)
+//         .then(resp => resp.json())
+//         .then(processData)
+//         .catch(handleError)
+
+//         if(card1.visability == true){
+//             clearInterval();
+//         }
+//    }
     </script>
 </body>
 </html>

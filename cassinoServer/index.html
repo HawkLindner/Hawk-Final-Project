@@ -24,8 +24,9 @@
     <button id="shuffle">Shuffle</button>
     <button id="start">Start?</button>
     <button id="clear">Clear?</button>
+    <button id="stay">Stay?</button>
     <div id="cards">
-        <span id="helloText"></span>
+        <span id="playerScore"></span>
         <br>
         <li id="Pcards"></li>
 
@@ -34,120 +35,7 @@
 
     
     <script>
-        let userCards;
-        let userAce = false;
-        let card1;
-        let card2;
-        let userScore = 0;
-        let onTable =[];
-        let count = 0;
-        const shuffleBtn = document.getElementById("shuffle");
-        const clearBtn = document.getElementById("clear");
-        let Pcards = document.getElementById("Pcards");
-
-        function checkScore(){
-            userScore = 0;
-            
-            let i = 0;
-            while(i < count){
-                let value = onTable[i].id.split("-"); //splits the card into an arr of [J, C] or [6, D]
-                if(isNaN(value[0])){            //if NaN, then its a K, J, Q, or Ace
-                    if(value[0] === 'A'){       //if value is A, then return 11 and that will set ace check to true
-                        userAce = true;
-                        onTable[i].value = 11;
-                    }
-                    else{onTable[i].value = 10}    //if its not the ace then we will return a 10 since all of them have the same value
-                }
-                else{
-                    onTable[i].value = value[0];   //if its NaN, just return the value of the number
-                }
-                userScore = parseInt(userScore) + parseInt(onTable[i].value);
-                i++;
-            }
-            let postData = {  "sum" : parseInt(userScore),
-                                "ace" : userAce};  
-            fetch("http://localhost:5000/checkScore",{
-                method : "POST",
-                    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-        },
-                body: JSON.stringify(postData),
-            })
-            .then(response =>{
-                if(!response.ok){
-                    console.log("over 21");
-                    clearBtn.disabled = false;
-                }
-                else{
-                    console.log(userScore);
-                    console.log(userAce);
-                }
-            })
-        }
-
-        function createCard(card){
-            let img =  document.createElement("img");
-            img.src = "/cassinoServer/cards/"+card+".png";
-            img.id = card;
-            return img;
-        }
-        clearBtn.addEventListener("click",async () => {
-            clearBtn.disabled = true;
-            startBtn.disabled = false;
-            shuffleBtn.disabled = false;
-            userScore = 0;
-            userAce = false;
-            try{
-                const response = await fetch("http://localhost:5000/clear");
-                const check = await response.text();
-                console.log(check);
-            }
-            catch (error){
-                console.log(error);
-            }
-            while(Pcards.firstChild){
-                Pcards.removeChild(Pcards.firstChild);
-            }
-            console.log(userScore);
-        });
-        shuffleBtn.addEventListener("click", async () => {
-        try {
-            const response = await fetch("http://localhost:5000/shuffle");
-            const data = await response.text();
-            console.log(data);
-        } catch (error) {
-            console.error("Error:", error);
-        }
-        });
-
-        const startBtn = document.getElementById("start");
-        startBtn.addEventListener("click",async() =>{
-            startBtn.disabled = true;
-            clearBtn.disabled = false;
-            shuffleBtn.disabled = true;
-            userScore = 0;
-            userAce = false;
-            try{
-                const response = await fetch("http://localhost:5000/start");
-                userCards = await response.json();
-                // card1 = userCards.card1;
-                // card2 = userCards.card2;
-                card1 = createCard(userCards.card1);
-                card2 = createCard(userCards.card2);
-                onTable[0] = card1;
-                onTable[1] = card2;
-                Pcards.append(card1,card2);
-                ;
-            }
-            catch(error){
-                console.error("Error:",error);
-            }
-            
-            count = 2 ;
-            console.log(card1.id + " " + card2.id);
-            checkScore();
-        });
+        
     </script>
 </body>
 </html>
