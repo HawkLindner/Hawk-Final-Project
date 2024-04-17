@@ -3,57 +3,25 @@ const express = require("express");
 const app = express();
 const port = 5000;
 app.use(cors()); // Enable CORS for all routes
-app.use(express.json());
+var bodyParser = require('body-parser')
+
+// app.use(express.json());
+
+
+const multer = require("multer");
+// for application/x-ww-form-urlencoded
+app. use(express. urlencoded({ extended: true })); // built-in middleware
+// for application/json
+app.use(express.json()); // built-in middleware
+// for multipart/form-data (required with FormData)
+app.use (multer() . none()); // requires the "multer" module
 
 //we start out by getting the deck and shuffling the deck
 let deck;
-let userCards;
-let sum;
-let ace;
-let dealerSum;
-shuffleDeck();
-console.log(deck);  
-
-app.post("/checkScore",(req,res)=>{
-    console.log(req.body.sum + " Body");
-    let {sum, ace} = req.body;
-    console.log("Sum " + req.body.sum);
-    console.log("Ace " + req.body.ace);
-    res.type("text");
-    res.sendStatus(200);
-});
-//this is called when the user hits shuffle
-app.get("/deck",(req,res) =>{
-    res.type("json");
-    deck = shuffleDeck();
-    res.send(200);
-});
-app.get("/start",(req,res) =>{
-     userCards = {
-        "card1" : deck.pop(),
-        "card2" : deck.pop()
-    }
-    res.type("json");
-    res.send(userCards);
-});
-
-app.get("/clear",(req,res) =>{
-    delete userCards;
-    delete dealerCards;
-    res.type("text");
-    res.sendStatus(200);
-});
-function check(){
-    
-}
-function dealer(){
-    dealerCards = {
-        "card1" : deck.pop(),
-        "card2" : deck.pop()
-    }
-
-}
-
+// let userCards;
+// let sum;
+// let ace;
+// let dealerSum;
 
 function shuffleDeck(){
     deck = buildDeck();
@@ -80,7 +48,52 @@ function buildDeck(){
 }
 
 
+//server is going to do all of the work.
+
+//Start the game by the server dealing our 2 cards to the playe and 2 cards to dealser
+let userCards;
+let dealerCards;
+app.get("/start",(req,res) =>{
+    deck = shuffleDeck();
+    userCards = {
+       card1 : deck.pop(),
+       card2 : deck.pop()
+   }
+    dealerCards = {
+    card1 : deck.pop(),
+    card2 : deck.pop()
+   }
+   
+   res.send(200);
+});
+
+let dealer;
+let dealerSum;
+app.get("/dealerPage",(req,res) =>{
+        dealer = {
+            card1 : {
+                src : "/cassinoServer/cards/"+dealerCards.card1+".png",
+                id: dealerCards.card1,
+                visability : false,
+            },
+            card2 : {
+                src : "/cassinoServer/cards/"+dealerCards.card2+".png",
+                id : dealerCards.card2,
+                visability : true,
+            },
+            dealerSum : dealerSum
+        };
+        res.type("json");
+        res.send(dealer);
+});
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+
+
+
+
+

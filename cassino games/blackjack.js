@@ -296,39 +296,7 @@ function check(){
             winText.append("Draw, money back");
             return ;
         }
-}
-    // else if(dealerSum > userSum && dealerSum < 22){
-    //     winText.append("")
-    // }
-
-
-
-
-
-
-
-    
-   
-    // if(stay == true && dealerSum > 21){
-    //     if(dealerAce == true){
-    //         dealerSum = parseInt(dealerSum) - 10;
-    //         dealerAce = false;
-    //         console.log(dealerSum);
-    //         console.log(2);
-    //         return true;
-            
-    //     }
-    //     else{
-    //         winTextText.append("test test")
-    //         console.log(3);
-    //         return false;
-    //     }
-    // }
-    // else if(dealerSum < 17 && dealerSum < 22  && stay == true){
-    //     winText.append("House wins... " + {dealerSum} + "is more than " + {userSum});
-    //     console.log(4);
-    //     return false;
-    // }
+    }
 }
 
 window.onload = function(){

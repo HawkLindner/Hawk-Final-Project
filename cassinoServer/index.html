@@ -45,8 +45,9 @@
         const clearBtn = document.getElementById("clear");
         let Pcards = document.getElementById("Pcards");
 
-        async function checkScore(){
+        function checkScore(){
             userScore = 0;
+            
             let i = 0;
             while(i < count){
                 let value = onTable[i].id.split("-"); //splits the card into an arr of [J, C] or [6, D]
@@ -60,17 +61,19 @@
                 else{
                     onTable[i].value = value[0];   //if its NaN, just return the value of the number
                 }
-                userScore += parseInt(onTable[i].value);
+                userScore = parseInt(userScore) + parseInt(onTable[i].value);
                 i++;
             }
             let postData = {  "sum" : parseInt(userScore),
-                                "ace" : userAce};
-            console.log (" 1");  
+                                "ace" : userAce};  
             fetch("http://localhost:5000/checkScore",{
                 method : "POST",
+                    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+        },
                 body: JSON.stringify(postData),
             })
-            .then(console.log(postData + " 2"))
             .then(response =>{
                 if(!response.ok){
                     console.log("over 21");
@@ -82,10 +85,19 @@
                 }
             })
         }
+
+        function createCard(card){
+            let img =  document.createElement("img");
+            img.src = "/cassinoServer/cards/"+card+".png";
+            img.id = card;
+            return img;
+        }
         clearBtn.addEventListener("click",async () => {
             clearBtn.disabled = true;
             startBtn.disabled = false;
             shuffleBtn.disabled = false;
+            userScore = 0;
+            userAce = false;
             try{
                 const response = await fetch("http://localhost:5000/clear");
                 const check = await response.text();
@@ -97,10 +109,11 @@
             while(Pcards.firstChild){
                 Pcards.removeChild(Pcards.firstChild);
             }
+            console.log(userScore);
         });
         shuffleBtn.addEventListener("click", async () => {
         try {
-            const response = await fetch("http://localhost:5000/deck");
+            const response = await fetch("http://localhost:5000/shuffle");
             const data = await response.text();
             console.log(data);
         } catch (error) {
@@ -113,29 +126,26 @@
             startBtn.disabled = true;
             clearBtn.disabled = false;
             shuffleBtn.disabled = true;
+            userScore = 0;
+            userAce = false;
             try{
                 const response = await fetch("http://localhost:5000/start");
                 userCards = await response.json();
-                card1 = userCards.card1;
-                card2 = userCards.card2;
-                
-                console.log(card1 + " " + card2);
+                // card1 = userCards.card1;
+                // card2 = userCards.card2;
+                card1 = createCard(userCards.card1);
+                card2 = createCard(userCards.card2);
+                onTable[0] = card1;
+                onTable[1] = card2;
+                Pcards.append(card1,card2);
+                ;
             }
             catch(error){
                 console.error("Error:",error);
             }
-            startBtn.disabled = true;
-            shuffleBtn.disabled = true;
-            onTable[count] = document.createElement("img");
-            onTable[count].src = "/cassinoServer/cards/"+card1+".png";
-            onTable[count].id = card1;
-            Pcards.append(onTable[count]);
-            count++;
-            onTable[count] = document.createElement("img");
-            onTable[count].src = "/cassinoServer/cards/"+card2+".png";
-            onTable[count].id = card2;
-            Pcards.append(onTable[count]);
-            count++;
+            
+            count = 2 ;
+            console.log(card1.id + " " + card2.id);
             checkScore();
         });
     </script>
