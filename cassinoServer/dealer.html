@@ -60,17 +60,19 @@
                 //json has card1, card2,visablity for both, and a sum for visablity
         // Now you can update the DOM or do other operations with the dealer cards data
     };
-   function createCard(card){
-        let img = document.createElement("img");
-        if(card.visability == false){
-            //this is for the first card
-            img.src = "/cassinoServer/BackOfCard.jpg"
+        function createCard(card){
+            let img = document.createElement("img");
+            if(card.visability == false){
+                //this is for the first card
+                img.src = "/cassinoServer/BackOfCard.jpg"
+            }
+            else{
+                img.src = card.src;
+            }
+            return img;
         }
-        else{
-            img.src = card.src;
-        }
-        return img;
-   }
+
+        //test
 
    //set up timer 
 //    if(stay == true){
