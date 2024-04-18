@@ -9,7 +9,7 @@
 <body>
     <h1>Dealer</h1>
     <div id="cards">
-        <span id= "score"></span>
+        <h3 id= "score"></h3>
         <li id = "table"></li>
     </div>
     <div id="endGameMsg">
@@ -17,85 +17,10 @@
     </div>
     <button type = "button" id = "start">Start</button>
     <!-- Do i use get for / here -->
-
-    <script>
-        let dealerCards = [];
-        let card1;
-        let card2;
-
-        let dealer = {}
-       
-        startBtn = document.getElementById("start");
-        startBtn.addEventListener("click",start);
-        let table = document.getElementById("table");
-        let scoreOutput = document.getElementById("score");
-            
-        async function statusCheck(res){
-            if(!res.ok){
-                throw new Error("Failed to fetch dealer cards");
-            }
-            return res;
-        }
-        async function handleError(){
-            return "Something went wrong";
-        }
-        function processData(responseData){
-            dealer = responseData;
-                card1 = createCard(dealer.card1);
-                card2 = createCard(dealer.card2);
-                score.innerText = dealer.dealerHiddenSum + " +???";
-                table.append(card1,card2);
-        }
-        async function start(){
-                startBtn.disabled = true;
-                await fetch("http://localhost:5000/start")//starts the game
-                .then(statusCheck)
-                .catch(handleError);
-                await fetch("http://localhost:5000/dealerPage")
-                .then(statusCheck)
-                .then(resp => resp.json())
-                .then(processData)
-                .catch(handleError)
-               
-                //json has card1, card2,visablity for both, and a sum for visablity
-        // Now you can update the DOM or do other operations with the dealer cards data
-    };
-        function createCard(card){
-            let img = document.createElement("img");
-            if(card.visability == false){
-                //this is for the first card
-                img.src = "/cassinoServer/BackOfCard.jpg"
-            }
-            else{
-                img.src = card.src;
-            }
-            return img;
-        }
-
-        //test
-
-   //set up timer 
-//    if(stay == true){
-//    const intervalId = setInterval(updateDealer(),5000);
-//    }
-//    function updateData(responseData){
-//         dealer = responseData;
-//    }
-// // To stop the interval after some time:
-//     setTimeout(() => {
-//     clearInterval(intervalId); // Stop the interval
-//     }, 10000); // Stop after 10 seconds
-//    async function updateDealer(){
-//     await fetch("http://localhost:5000/dealerUpdate")
-//         .then(statusCheck)
-//         .then(resp => resp.json())
-//         .then(processData)
-//         .catch(handleError)
-
-//         if(card1.visability == true){
-//             clearInterval();
-//         }
-//    }
-    </script>
+  
+    
+    <script src = "dealer.js"></script>
+    
+    
 </body>
 </html>

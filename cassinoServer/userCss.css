@@ -1,0 +1,13 @@
+#cards img{
+    height : 175px;
+    width : 125px;
+    margin:1px;
+}
+#Pcards img{
+    height :175px;
+    width : 125px;
+    margin:1px;
+}
+li{
+    list-style-type:none;
+}

@@ -5,7 +5,7 @@ const port = 5000;
 app.use(cors()); // Enable CORS for all routes
 var bodyParser = require('body-parser')
 
-// app.use(express.json());
+//app.use(express.json());
 
 
 const multer = require("multer");
@@ -16,13 +16,33 @@ app.use(express.json()); // built-in middleware
 // for multipart/form-data (required with FormData)
 app.use (multer() . none()); // requires the "multer" module
 
-//we start out by getting the deck and shuffling the deck
-let deck;
-// let userCards;
-// let sum;
-// let ace;
-// let dealerSum;
 
+
+
+let deck = [];
+let onTable = [];
+let userCards = [];
+let dealerCards = [];
+let userHand = [];
+
+//status for game
+gameStats = {
+    visability : false,
+    userWin : false,
+    dealerWin : false,
+    userAce : false,
+    dealerAce : false,
+    playerSum : 0,
+    isPlayerWinning : true,
+    isLosing : false,
+    userStay : false,
+    dealerTotalSum : 0,
+    dealerHiddenSum: 0,
+    isPlayerWinning : true,
+    endGameMsg : ""
+};
+
+//we start out by getting the deck and shuffling the deck
 function shuffleDeck(){
     deck = buildDeck();
     for(i = 0 ; i < deck.length;i++){
@@ -47,6 +67,7 @@ function buildDeck(){
     return deck;
 }
 
+//this will check for an ace
 //need to add the ace functionalaity
 function isLoss(sum){
     if(sum > 21){
@@ -57,22 +78,46 @@ function isLoss(sum){
     }
 }
 
-function isWinning(pSum, dSum){
-    if(pSum > dSum && (pSum < 22 || dSum < 22)){
+//this method checks to see if the player is beating the dealer
+//if so then we send back true
+function isWinning(pSum,dSum){
+    if(pSum > dSum && pSum < 22){
         return true;//player is winning
     }
-    else if((pSum < 22 || dSum < 22 )&& pSum <= dSum){
+    else if(dSum < 22 && pSum <= dSum){
         return false;//player is losing
     }
 }
+//this method takes the dealer cards and updates dealerTotalSum and DealerHidden
+function getDealerSum(){
+    gameStats.dealerTotalSum = 0;
+    gameStats.dealerHiddenSum = 0;
+    for(i = 0 ; i < dealerCards.length; i++){
+        gameStats.dealerTotalSum += parseInt(checkSum(dealerCards[i]));
+    }
+    gameStats.dealerHiddenSum = parseInt(checkSum((dealerCards[1])));
 
-function checkSum(card,sum){
+
+}
+//this method takes the user cards and values and updates the playerSum
+function getUserSum(){
+    gameStats.playerSum = 0;
+    for(i = 0; i < userCards.length ; i++){
+        gameStats.playerSum += parseInt(checkSum(userCards[i]));
+        console.log(userCards[i]);
+    }
+    if(gameStats.playerSum > 21){
+        gameStats.isLosing = true;
+    }
+}
+//this function takes the card and splits it (8-C) and takes the 8 and returns it
+//if its a (K,Q,J) we set the value to 10, A is 11
+function checkSum(card){
     
     let value = card.split("-");
     if(isNaN(value[0])){
         if(value[0] === "A"){
             value[0] = 11;
-            value[1] = 1;
             return value;
         }
         else{
@@ -84,90 +129,116 @@ function checkSum(card,sum){
 //server is going to do all of the work.
 
 //Start the game by the server dealing our 2 cards to the playe and 2 cards to dealser
-let userCards;
-let dealerCards;
-let dealer;
-let dealerSum = 0;
-let sum = 0;
-let count = 2;
-let userStay = false;
-let isPlayerWinning = true;
-let isLosing = false;
 
+//this method will send the current json object that has the game stats
+app.get("/gameStats",(req,res)=>{
+    res.type("json");
+    res.send(gameStats);
+});
 
+//this will tell the dealer page what it should look like at this point
+app.get("/dealerPage",(req,res) =>{
+    onTable[0] = "/cassinoServer/cards/"+dealerCards[0]+".png";
+    onTable[1] = "/cassinoServer/cards/"+dealerCards[1]+".png";    
+    res.type("json");
+    res.send(onTable);
+});
+
+//this will update the user page with what it should look like 
+app.get("/userPage",(req,res)=>{
+    userHand[0] = "/cassinoServer/cards/"+userCards[0]+".png";
+    userHand[1] = "/cassinoServer/cards/"+userCards[1]+".png";
+    res.type("json");
+    res.send(userHand);
+});
+
+//this is the start, we are shuffling the deck and calling for 2 cards per player,
+//including the dealer. We will then get the sum for both and check to see
+//if anyone is winning
 app.get("/start",(req,res) =>{
     deck = shuffleDeck();
-    userCards = {
-       card1 : deck.pop(),
-       card2 : deck.pop()
-   }
-    dealerCards = {
-    card1 : deck.pop(),
-    card2 : deck.pop()
-   }
-   
-   res.send(200);
-});
+    userCards[0] = deck.pop();
+    userCards[1] = deck.pop();
+    dealerCards[0] = deck.pop();
+    dealerCards[1] = deck.pop();
 
-app.get("/userPage",(req,res)=>{
-    //here we will update the users page
-    user = {
-        card1 : {
-            src : "/cassinoServer/cards/"+userCards.card1+".png",
-            id : userCards.card1,
-        },
-        card2 : {
-            src : "/cassinoServer/cards/"+userCards.card2+".png",
-            id : userCards.card2,
-        }.
-        userSum = 0,
+    gameStats.playerSum = 0;
+    gameStats.dealerTotalSum = 0;
+    gameStats.dealerHiddenSum = 0;
+    getDealerSum();
+    getUserSum();
+    isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
+    //if the player sum == 21
+    if(gameStats.playerSum == 21){
+        //if the dealer has 21 also
+        if(gameStats.dealerTotalSum == 21){
+            //dealer wins
+            gameStats.dealerWin = true;
+        }
+
+        //if the player itself has 21, player wins
+        gameStats.userWin = true;
     }
-    userSum = parseInt(checkSum((dealer.card1.id),0));
-    userSum += parseInt(checkSum((dealer.card2.id),userSum));
-    user.userSum = userSum;
+    //if the dealer has 21 alone the dealer wins
+    else if(gameStats.dealerTotalSum == 21){
+        gameStats.dealerWin = true;
+    }
+    //if nobody has 21
+    else{
+        //if the player has more than the dealer, tell them
+        if(gameStats.playerSum > gameStats.dealerTotalSum){
+            gameStats.isPlayerWinning = true;
+            gameStats.isLosing = false;
+        }
+        //if not the dealer is winning 
+        else{
+            gameStats.isPlayerWinning = false;
+            gameStats.isLosing = false;
+        }
+    }
+   res.sendStatus(200);
 });
 
-app.get("/dealerPage",(req,res) =>{
-        dealer = {
-            card1 : {
-                src : "/cassinoServer/cards/"+dealerCards.card1+".png",
-                id: dealerCards.card1,
-                visability : false,
-            },
-            card2 : {
-                src : "/cassinoServer/cards/"+dealerCards.card2+".png",
-                id : dealerCards.card2,
-                visability : true,
-            },
-            dealerTotalSum : 0,
-            dealerHiddenSum: 0,
-            isPlayerWinning : true,
-        };
-        sum = parseInt(checkSum((dealer.card1.id),dealerSum));
-        sum += parseInt(checkSum((dealer.card2.id),sum));
-        dealer.dealerTotalSum = sum;
-        dealer.dealerHiddenSum = parseInt(checkSum((dealer.card2.id),0)); 
-        
+app.get("/clear",(req,res)=>{
+    gameStats = {
+        visability : false,
+        userWin : false,
+        dealerWin : false,
+        playerSum : 0,
+        isPlayerWinning : true,
+        isLosing : false,
+        userStay : false,
+        dealerTotalSum : 0,
+        dealerHiddenSum: 0,
+        isPlayerWinning : true,
+    };
+    res.sendStatus(200);
+})
+//method to give the user another card
+app.get("/userHit",(req,res)=>{
+    let card = deck.pop();
+    userCards.push(card);
+    userHand.push("/cassinoServer/cards/"+card+".png");
+    getDealerSum();
+    getUserSum();
+    isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
+    res.type("json");
+    res.json(userHand);
 
-        
-        res.type("json");
-        res.send(dealer);
 });
-function exit(){
+app.get("/stay",(req,res)=>{
+    userStay = true;
 
-}
-app.get("/dealerUpdate",(req,res) =>{
-    if(userStay == true){
-        if(dealerTotalSum < 17){}
-    
-}});
+})
 
-app.get("/hit",(req,res)=>{
-
+app.get("/shuffle",(req,res)=>{
+    shuffleDeck();
+    console.log("Shuffled");
 });
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
+    shuffleDeck();
 });
 
 
