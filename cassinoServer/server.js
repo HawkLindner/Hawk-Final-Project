@@ -5,9 +5,6 @@ const port = 5000;
 app.use(cors()); // Enable CORS for all routes
 var bodyParser = require('body-parser')
 
-//app.use(express.json());
-
-
 const multer = require("multer");
 // for application/x-ww-form-urlencoded
 app. use(express. urlencoded({ extended: true })); // built-in middleware
@@ -18,28 +15,24 @@ app.use (multer() . none()); // requires the "multer" module
 
 
 
-
-let deck = [];
-let onTable = [];
-let userCards = [];
-let dealerCards = [];
-let userHand = [];
+let deck = [];              //deck of cards 
+let onTable = [];           //the dealers cards on table and their src for html
+let userCards = [];         //these are the cards in the user hand (9-C)
+let userHand = [];          //these are the src sent to the user html
+let dealerCards = [];       //these are the cards in the dealer hand(8-D)
+let userAce = false;        //this tells the server if the user has drawn an ace    
+let dealerAce = false;      //this tells the server if the dealer has drawn an ace
 
 //status for game
 gameStats = {
-    visability : false,
-    userWin : false,
-    dealerWin : false,
-    userAce : false,
-    dealerAce : false,
-    playerSum : 0,
-    isPlayerWinning : true,
-    isLosing : false,
-    userStay : false,
-    dealerTotalSum : 0,
-    dealerHiddenSum: 0,
-    isPlayerWinning : true,
-    endGameMsg : ""
+    visability : false,     //decides if the dealer has their 1 card revealed 
+    playerSum : 0,          //this is the players sum between cards
+    isPlayerWinning : true, //checks to see if the user total is larger. if so,true
+    isLosing : false,       //checks to see if someone has bust
+    userStay : false,       //checks to see if the user has stayed
+    dealerTotalSum : 0,     //the real total for the dealer
+    dealerHiddenSum: 0,     //the hidden total so the player doesn't know the real sum
+    endGameMsg : ""         //the endgame message that will be sent
 };
 
 //we start out by getting the deck and shuffling the deck
@@ -66,18 +59,6 @@ function buildDeck(){
     }
     return deck;
 }
-
-//this will check for an ace
-//need to add the ace functionalaity
-function isLoss(sum){
-    if(sum > 21){
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 //this method checks to see if the player is beating the dealer
 //if so then we send back true
 function isWinning(pSum,dSum){
@@ -93,20 +74,35 @@ function getDealerSum(){
     gameStats.dealerTotalSum = 0;
     gameStats.dealerHiddenSum = 0;
     for(i = 0 ; i < dealerCards.length; i++){
-        gameStats.dealerTotalSum += parseInt(checkSum(dealerCards[i]));
+        let val = checkSum(dealerCards[i]);
+        if(val == 11){
+            dealerAce = true;
+        }
+        gameStats.dealerTotalSum += parseInt(val);
     }
     gameStats.dealerHiddenSum = parseInt(checkSum((dealerCards[1])));
+
+    if(gameStats.dealerTotalSum > 21 && dealerAce == true){
+        gameStats.dealerTotalSum = gameStats.dealerTotalSum -  10;
+    }
 
 
 }
 //this method takes the user cards and values and updates the playerSum
 function getUserSum(){
     gameStats.playerSum = 0;
+    console.log(userCards)
     for(i = 0; i < userCards.length ; i++){
-        gameStats.playerSum += parseInt(checkSum(userCards[i]));
-        console.log(userCards[i]);
+        let val = checkSum(userCards[i]);
+        if(val == 11){
+            userAce = true;
+        }
+        gameStats.playerSum += parseInt(val);
     }
-    if(gameStats.playerSum > 21){
+    if(gameStats.playerSum > 21 && userAce == true){
+        gameStats.playerSum = gameStat.playerSum - 10;
+    }
+    else if(gameStats.playerSum > 21){
         gameStats.isLosing = true;
     }
 }
@@ -152,14 +148,16 @@ app.get("/userPage",(req,res)=>{
     res.send(userHand);
 });
 
+
 //this is the start, we are shuffling the deck and calling for 2 cards per player,
 //including the dealer. We will then get the sum for both and check to see
 //if anyone is winning
 app.get("/start",(req,res) =>{
+    console.log(gameStats.playerSum);
     deck = shuffleDeck();
     userCards[0] = deck.pop();
     userCards[1] = deck.pop();
-    dealerCards[0] = deck.pop();
+    dealerCards[0]  = deck.pop();
     dealerCards[1] = deck.pop();
 
     gameStats.playerSum = 0;
@@ -196,9 +194,11 @@ app.get("/start",(req,res) =>{
             gameStats.isLosing = false;
         }
     }
+   setInterval(dealerTurn, 1000)
    res.sendStatus(200);
 });
 
+//clears all variables to the default, ready to restart the gaem
 app.get("/clear",(req,res)=>{
     gameStats = {
         visability : false,
@@ -212,25 +212,33 @@ app.get("/clear",(req,res)=>{
         dealerHiddenSum: 0,
         isPlayerWinning : true,
     };
+    userCards = [];
+    userAce = false; // Reset userAce flag
+    dealerAce = false; // Reset dealerAce flag
+    dealerStart = false;
     res.sendStatus(200);
 })
+
 //method to give the user another card
 app.get("/userHit",(req,res)=>{
     let card = deck.pop();
     userCards.push(card);
     userHand.push("/cassinoServer/cards/"+card+".png");
-    getDealerSum();
+    // getDealerSum();
     getUserSum();
     isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
     res.type("json");
     res.json(userHand);
 
 });
+
+//lets the server know when the users turn is up
 app.get("/stay",(req,res)=>{
-    userStay = true;
+    gameStats.userStay = true;
 
 })
 
+//option for the user to shuffle the deck
 app.get("/shuffle",(req,res)=>{
     shuffleDeck();
     console.log("Shuffled");
@@ -242,7 +250,20 @@ app.listen(port, () => {
 });
 
 
+//to handle the dealer side we want to run this whenever the user selects to stay
+//when the user decides to stay the dealer is required to get cards until the total sum is greater than 17.
+//once 17 is reached the dealer is forced to stop and this ends the dealers turn,sums are compaired and then a final
+//winner can be decieded
 
-
-
-
+function dealerTurn(){
+    if(gameStats.userStay == true){
+        while(gameStats.dealerTotalSum < 17){
+            let card = deck.pop();
+            dealerCards.push(card);
+            onTable.push("/cassinoServer/cards/"+card+".png");
+            getDealerSum()
+            gameStats.isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
+        }
+    }
+    return onTable;
+}

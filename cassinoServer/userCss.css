@@ -11,3 +11,31 @@
 li{
     list-style-type:none;
 }
+
+body{
+    display:flex;
+    flex-direction:column-reverse;
+}
+#cards{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction : column-reverse;
+}
+.centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -100px;
+  }
+#buttons{
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    flex-direction: row;
+}
+/* button{
+    display:flex;
+    flex-direction:row;
+} */

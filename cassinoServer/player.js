@@ -109,13 +109,6 @@ stay.addEventListener("click",()=>{
 
         console.log("Stay");
 })
-//add card to the scren. part of hit
-function addCard(responseData){
-    console.log(responseData);
-    let next = createCard(responseData[responseData.length-1]);
-    onTable.push(next);
-    table.append(onTable[onTable.length -1]);
-}
 
 
 //function for fetch
@@ -145,7 +138,6 @@ function updateData(data){
     score.innerText = "";
     score.append(user.playerSum);
 
-    stay = user.userStay;   //checking stay state
     if(user.playerSum < 10){
         hit.className = "btn btn-success";
     }
@@ -164,4 +156,11 @@ function createCard(card){
     img.src = card;
     console.log(img.src);
     return img;
+}
+//add card to the scren. part of hit
+function addCard(responseData){
+    console.log(responseData);
+    let next = createCard(responseData[responseData.length-1]);
+    onTable.push(next);
+    table.append(onTable[onTable.length -1]);
 }
