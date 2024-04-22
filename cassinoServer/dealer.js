@@ -1,27 +1,43 @@
+// const ws = new WebSocket('ws://localhost:5000');
+
+// ws.addEventListener('open', function (event) {
+//     ws.send('Hello Server Dealer here!');
+// });
+
+// ws.addEventListener('message', function (event) {
+//     console.log('Message from server:', event.data);
+// });
+
+
 
 let onTable = [];
 let dealer = [];
 let gameStat = {};
 let table = document.getElementById("table");
 let scoreOutput = document.getElementById("score");
+let start = false;
 
+let intervalId = setInterval(startGame(),2000);
+
+async function startGame(){
+    if(start == false){
+        startBtn.disabled = true;
+        await fetch("http://localhost:5000/start")//starts the game
+        .then(statusCheck)
+        .catch(handleError);
+        const gameStatsResponse = await fetch("http://localhost:5000/gameStats");
+        const gameStatsData = await gameStatsResponse.json();
+        updateData(gameStatsData); // Pass game stats data to updateData
+        await fetch("http://localhost:5000/dealerPage")
+        .then(statusCheck)
+        .then(resp => resp.json())
+        .then(processData)
+        .catch(handleError)
+        setInterval(checkStay, 3000);
+        
+    }
+}
 //this is where we will start the dealer side
-startBtn = document.getElementById("start");
-startBtn.addEventListener("click",async ()=>{
-    startBtn.disabled = true;
-    await fetch("http://localhost:5000/start")//starts the game
-    .then(statusCheck)
-    .catch(handleError);
-    const gameStatsResponse = await fetch("http://localhost:5000/gameStats");
-    const gameStatsData = await gameStatsResponse.json();
-    updateData(gameStatsData); // Pass game stats data to updateData
-    await fetch("http://localhost:5000/dealerPage")
-    .then(statusCheck)
-    .then(resp => resp.json())
-    .then(processData)
-    .catch(handleError)
-    setInterval(checkStay, 3000);
-});
 
 //handles the errors
 async function handleError(){

@@ -13,6 +13,41 @@ app.use(express.json()); // built-in middleware
 // for multipart/form-data (required with FormData)
 app.use (multer() . none()); // requires the "multer" module
 
+const WebSocket = require('ws');
+const http = require('http');
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+// Handle WebSocket connections
+// wss.on('connection', function connection(ws) {
+//     console.log('WebSocket client connected');
+
+//     // Handle incoming messages from WebSocket clients
+//     ws.on('message', function incoming(message) {
+//         console.log('received: %s', message);
+//         // Broadcast the message to all clients
+//         wss.clients.forEach(function each(client) {
+//             if (client !== ws && client.readyState === WebSocket.OPEN) {
+//                 client.send(message);
+//             }
+//         });
+//     });
+//     ws.on('start',(data)=>{
+//         wss.emit()
+//     })
+// });
+// // Start the server
+// const PORT = process.env.PORT || 5000;
+// server.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+// });
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+    shuffleDeck();
+});
+
+
+
 
 
 let deck = [];              //deck of cards 
@@ -24,6 +59,21 @@ let userAce = false;        //this tells the server if the user has drawn an ace
 let dealerAce = false;      //this tells the server if the dealer has drawn an ace
 
 //status for game
+dealerPage = {
+    dealerTotalSum : 0,
+    dealerHiddenSum : 0,
+    onTable : onTable,
+    start :false
+}
+
+function setDealerStart(){
+    onTable[0] = "/cards/"+dealerCards[0]+".png";
+    onTable[1] = "/cards/"+dealerCards[1]+".png";
+}
+app.get("/dealerPage" ,(req,res)=>{
+    res.type("json");
+    res.send(dealerPage);
+})
 gameStats = {
     visability : false,     //decides if the dealer has their 1 card revealed 
     playerSum : 0,          //this is the players sum between cards
@@ -32,7 +82,7 @@ gameStats = {
     userStay : false,       //checks to see if the user has stayed
     dealerTotalSum : 0,     //the real total for the dealer
     dealerHiddenSum: 0,     //the hidden total so the player doesn't know the real sum
-    endGameMsg : ""         //the endgame message that will be sent
+    endGameMsg : "",        //the endgame message that will be sent
 };
 
 //we start out by getting the deck and shuffling the deck
@@ -91,7 +141,6 @@ function getDealerSum(){
 //this method takes the user cards and values and updates the playerSum
 function getUserSum(){
     gameStats.playerSum = 0;
-    console.log(userCards)
     for(i = 0; i < userCards.length ; i++){
         let val = checkSum(userCards[i]);
         if(val == 11){
@@ -133,27 +182,25 @@ app.get("/gameStats",(req,res)=>{
 });
 
 //this will tell the dealer page what it should look like at this point
-app.get("/dealerPage",(req,res) =>{
-    onTable[0] = "/cassinoServer/cards/"+dealerCards[0]+".png";
-    onTable[1] = "/cassinoServer/cards/"+dealerCards[1]+".png";    
-    res.type("json");
-    res.send(onTable);
-});
+// app.get("/dealerPage",(req,res) =>{
+//     onTable[0] = "/cards/"+dealerCards[0]+".png";
+//     onTable[1] = "/cards/"+dealerCards[1]+".png";    
+//     res.type("json");
+//     res.send(onTable);
+// });
 
 //this will update the user page with what it should look like 
 app.get("/userPage",(req,res)=>{
-    userHand[0] = "/cassinoServer/cards/"+userCards[0]+".png";
-    userHand[1] = "/cassinoServer/cards/"+userCards[1]+".png";
+    userHand[0] = "/cards/"+userCards[0]+".png";
+    userHand[1] = "/cards/"+userCards[1]+".png";
     res.type("json");
     res.send(userHand);
 });
-
 
 //this is the start, we are shuffling the deck and calling for 2 cards per player,
 //including the dealer. We will then get the sum for both and check to see
 //if anyone is winning
 app.get("/start",(req,res) =>{
-    console.log(gameStats.playerSum);
     deck = shuffleDeck();
     userCards[0] = deck.pop();
     userCards[1] = deck.pop();
@@ -163,6 +210,8 @@ app.get("/start",(req,res) =>{
     gameStats.playerSum = 0;
     gameStats.dealerTotalSum = 0;
     gameStats.dealerHiddenSum = 0;
+    gameStarted = true;
+    setDealerStart();
     getDealerSum();
     getUserSum();
     isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
@@ -223,7 +272,7 @@ app.get("/clear",(req,res)=>{
 app.get("/userHit",(req,res)=>{
     let card = deck.pop();
     userCards.push(card);
-    userHand.push("/cassinoServer/cards/"+card+".png");
+    userHand.push("/cards/"+card+".png");
     // getDealerSum();
     getUserSum();
     isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
@@ -235,17 +284,13 @@ app.get("/userHit",(req,res)=>{
 //lets the server know when the users turn is up
 app.get("/stay",(req,res)=>{
     gameStats.userStay = true;
+    console.log("Stay");
+    dealerTurn();
 
 })
 
 //option for the user to shuffle the deck
 app.get("/shuffle",(req,res)=>{
-    shuffleDeck();
-    console.log("Shuffled");
-});
-
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
     shuffleDeck();
 });
 
@@ -260,10 +305,23 @@ function dealerTurn(){
         while(gameStats.dealerTotalSum < 17){
             let card = deck.pop();
             dealerCards.push(card);
-            onTable.push("/cassinoServer/cards/"+card+".png");
+            onTable.push("/cards/"+card+".png");
             getDealerSum()
             gameStats.isPlayerWinning = isWinning(gameStats.playerSum,gameStats.dealerTotalSum);
+            console.log(gameStats.dealerTotalSum + " dealers sum");
+            console.log(gameStats.isPlayerWinning + " is player Winning");
+            console.log(dealerCards + " dealer Hand");
+            console.log(onTable + " cards on table");
+
         }
     }
-    return onTable;
+}
+
+
+let gameStarted = false;
+function checkGameStarted(req, res, next) {
+    if (!gameStarted) {
+        return res.status(400).send('Game has not started yet');
+    }
+    next();
 }

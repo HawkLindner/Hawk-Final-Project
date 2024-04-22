@@ -1,12 +1,21 @@
+// const ws = new WebSocket('ws://localhost:5000');
 
-
-// let socket = socket.io.connect("http://localhost:5000");
-// socket.on('connect', () => {
-//     console.log('Connected to server');
+// ws.addEventListener('open', function (event) {
+//     ws.send('Hello Server Player 1!');
+//     ws.send({playerId : 1});
 // });
+
+// ws.addEventListener('message', function (event) {
+//     console.log('Message from server:', event.data);
+// });
+
+
+
+
 
 let onTable = [];
 let user = {};
+let stay = false;
 let table = document.getElementById("Pcards");
 let score = document.getElementById("Pscore");
 
@@ -47,10 +56,6 @@ start.addEventListener("click",async() =>{
 
     
 });
-let endMsg = document.getElementById("endMsg");
-function endGame(){
-    endMsg.append(user.engGameMsg);
-}
 let clear = document.getElementById("clear");
 clear.addEventListener("click", async() =>{
     const reset = await fetch("http://localhost:5000/clear");
@@ -99,8 +104,8 @@ hit.addEventListener("click", async () => {
     }
 });
 
-let stay = document.getElementById("stay");
-stay.addEventListener("click",()=>{
+let Btn = document.getElementById("stay");
+stayBtn.addEventListener("click",()=>{
     fetch("http://localhost:5000/stay");
         stay.disabled = true;
         hit.disabled = true;
