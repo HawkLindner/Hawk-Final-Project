@@ -66,14 +66,6 @@ dealerPage = {
     start :false
 }
 
-function setDealerStart(){
-    onTable[0] = "/cards/"+dealerCards[0]+".png";
-    onTable[1] = "/cards/"+dealerCards[1]+".png";
-}
-app.get("/dealerPage" ,(req,res)=>{
-    res.type("json");
-    res.send(dealerPage);
-})
 gameStats = {
     visability : false,     //decides if the dealer has their 1 card revealed 
     playerSum : 0,          //this is the players sum between cards
@@ -84,6 +76,15 @@ gameStats = {
     dealerHiddenSum: 0,     //the hidden total so the player doesn't know the real sum
     endGameMsg : "",        //the endgame message that will be sent
 };
+
+function setDealerStart(){
+    onTable[0] = "/cards/"+dealerCards[0]+".png";
+    onTable[1] = "/cards/"+dealerCards[1]+".png";
+}
+// app.get("/dealerPage" ,(req,res)=>{
+//     res.type("json");
+//     res.send(dealerPage);
+// })
 
 //we start out by getting the deck and shuffling the deck
 function shuffleDeck(){
@@ -182,12 +183,12 @@ app.get("/gameStats",(req,res)=>{
 });
 
 //this will tell the dealer page what it should look like at this point
-// app.get("/dealerPage",(req,res) =>{
-//     onTable[0] = "/cards/"+dealerCards[0]+".png";
-//     onTable[1] = "/cards/"+dealerCards[1]+".png";    
-//     res.type("json");
-//     res.send(onTable);
-// });
+app.get("/dealerPage",(req,res) =>{
+    onTable[0] = "/cards/"+dealerCards[0]+".png";
+    onTable[1] = "/cards/"+dealerCards[1]+".png";    
+    res.type("json");
+    res.send(onTable);
+});
 
 //this will update the user page with what it should look like 
 app.get("/userPage",(req,res)=>{

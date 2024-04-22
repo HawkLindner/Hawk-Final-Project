@@ -74,7 +74,7 @@ function hit(){
     
     onTable[cardCount] = document.createElement("img");
     onTable[cardCount].id = deck.pop();
-    onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";
+    onTable[cardCount].src = "/cards/"+onTable[cardCount].id+".png";
     checkAce = checkValue(onTable[cardCount]);
     if(checkAce === 11){
         userAce = true;
@@ -123,7 +123,7 @@ function startGame(){
     //card one for user hand, onTable[2]
     onTable[cardCount] = document.createElement("img"); //creates a img element for the card to the user
     onTable[cardCount].id = deck.pop();                 //pops the top card off decks and stores it as the id for onTable[2].id
-    onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";  //stores the src for the img as the card from the folder
+    onTable[cardCount].src = "/cards/"+onTable[cardCount].id+".png";  //stores the src for the img as the card from the folder
     checkAce = checkValue(onTable[cardCount]);          //check ace function as used previously
     if(checkAce === 11){
         userAce = true;
@@ -137,7 +137,7 @@ function startGame(){
     //dealer card 2, onTable[3]
     onTable[cardCount] = document.createElement("img"); //creates img tag
     onTable[cardCount].id = deck.pop();                 //pops off the top card and stores
-    onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";  //sets img png for screen
+    onTable[cardCount].src = "/cards/"+onTable[cardCount].id+".png";  //sets img png for screen
     checkAce = checkValue(onTable[cardCount]);          //check ace function as used previously
     if(checkAce === 11){
         dealerAce = true;
@@ -151,7 +151,7 @@ function startGame(){
     //creates card 3, on table[4]
     onTable[cardCount] = document.createElement("img");     //create an img tag
     onTable[cardCount].id = deck.pop();                     //store the id of CardCount[4] as
-    onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";  //set the src of the img on onTable[4]
+    onTable[cardCount].src = "/cards/"+onTable[cardCount].id+".png";  //set the src of the img on onTable[4]
     checkAce = checkValue(onTable[cardCount]);              //check ace as earlier
     if(checkAce === 11){
         userAce = true;
@@ -172,7 +172,7 @@ function startGame(){
         userScore.append("Amoutn " + userSum);
         dealerScore.append("Amount " + dealerSum);
         if(dealerSum == 21){
-            onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
+            onTable[1].src = "/cards/"+onTable[1].id+".png";
             if(userSum == 21){
                 winText.append("Match is a tie");
             }
@@ -181,7 +181,7 @@ function startGame(){
             }
         }
         else if(userSum == 21) {
-            onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
+            onTable[1].src = "/cards/"+onTable[1].id+".png";
             winText.append("You win!");
         }
     }else if(userScore == 22){
@@ -214,12 +214,12 @@ function dealerAuto(){
     stayBtn.disabled = true;
     stay = false;
     //shows the hidden card to the user
-    onTable[1].src = "/cassino games/cards/"+onTable[1].id+ ".png";
+    onTable[1].src = "/cards/"+onTable[1].id+ ".png";
     //creates new img
     while(dealerSum < 17){
         onTable[cardCount] = document.createElement("img");
         onTable[cardCount].id = deck.pop();
-        onTable[cardCount].src = "/cassino games/cards/"+onTable[cardCount].id+".png";
+        onTable[cardCount].src = "/cards/"+onTable[cardCount].id+".png";
         checkAce = checkValue(onTable[cardCount]);
         if(checkAce === 11){
             dealerAce = true;
@@ -255,7 +255,7 @@ function check(){
                 return ;
             }
             else{
-                onTable[1].src = "/cassino games/cards/"+onTable[1].id+".png";
+                onTable[1].src = "/cards/"+onTable[1].id+".png";
                 winText.append("House wins...You busted fool");
                 hitBtn.disabled = true;
                 stayBtn.disabled = true;
