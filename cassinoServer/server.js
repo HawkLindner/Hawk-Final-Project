@@ -130,6 +130,7 @@ function getDealerSum(){
             dealerAce = true;
         }
         gameStats.dealerTotalSum += parseInt(val);
+        console.log(gameStats.dealerTotalSum)
     }
     gameStats.dealerHiddenSum = parseInt(checkSum((dealerCards[1])));
 
@@ -244,7 +245,7 @@ app.get("/start",(req,res) =>{
             gameStats.isLosing = false;
         }
     }
-   setInterval(dealerTurn, 1000)
+   //setInterval(dealerTurn, 1000)
    res.sendStatus(200);
 });
 
@@ -266,6 +267,7 @@ app.get("/clear",(req,res)=>{
     userAce = false; // Reset userAce flag
     dealerAce = false; // Reset dealerAce flag
     dealerStart = false;
+    gameStats.userStay = false;
     res.sendStatus(200);
 })
 
@@ -285,8 +287,6 @@ app.get("/userHit",(req,res)=>{
 //lets the server know when the users turn is up
 app.get("/stay",(req,res)=>{
     gameStats.userStay = true;
-    console.log("Stay");
-    dealerTurn();
 
 })
 
@@ -302,7 +302,8 @@ app.get("/shuffle",(req,res)=>{
 //winner can be decieded
 
 function dealerTurn(){
-    if(gameStats.userStay == true){
+    console.log("in");
+    if(gameStats.userStay === true){
         while(gameStats.dealerTotalSum < 17){
             let card = deck.pop();
             dealerCards.push(card);
@@ -315,14 +316,14 @@ function dealerTurn(){
             console.log(onTable + " cards on table");
 
         }
+        return onTable;
     }
+    
 }
 
-
-let gameStarted = false;
-function checkGameStarted(req, res, next) {
-    if (!gameStarted) {
-        return res.status(400).send('Game has not started yet');
+app.get("/check",(req,res)=>{
+    if(gameStats.userStay === true){
+        onTable = dealerTurn();
+        return onTable;
     }
-    next();
-}
+})

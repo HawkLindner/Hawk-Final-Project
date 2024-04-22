@@ -86,7 +86,7 @@ hit.addEventListener("click", async () => {
         if (!response.ok) {
             throw new Error("Failed to fetch data");
         }
-        const responseData = await response.json();
+        const responseData = await response.text();
         addCard(responseData);
         const gameStatsResponse = await fetch("http://localhost:5000/gameStats");
         const gameStatsData = await gameStatsResponse.json();
@@ -104,7 +104,7 @@ hit.addEventListener("click", async () => {
     }
 });
 
-let Btn = document.getElementById("stay");
+let stayBtn = document.getElementById("stay");
 stayBtn.addEventListener("click",()=>{
     fetch("http://localhost:5000/stay");
         stay.disabled = true;
