@@ -1,7 +1,7 @@
 const cors = require("cors"); // Import the cors middleware
 const express = require("express");
 const app = express();
-const port = 5000;
+const port = 3000;
 app.use(cors()); // Enable CORS for all routes
 var bodyParser = require('body-parser')
 
@@ -13,11 +13,35 @@ app.use(express.json()); // built-in middleware
 // // for multipart/form-data (required with FormData)
 // app.use (multer() . none()); // requires the "multer" module
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-    shuffleDeck();
-});
+// app.listen(port, () => {
+//     console.log(`Server running at http://localhost:${port}`);
+//     shuffleDeck();
+// });
 
+const server = http.createServer(app);
+const wss = new WebSocket.Server((server));
+
+//websocket connetion event handler
+wss.on('connection',(ws)=>{
+    console.log("player connected");
+
+    ws.on('message',(message)=>{
+        console.log("recieved", message);
+
+        wss.clients.forEach((client =>{
+            if(client !== ws && client.readyState === WebSocket.OPEN){
+                client.send(message);
+            }
+        }))
+    });
+    ws.on('close',()=>{
+        console.log("client gone");
+    })
+})
+const PORT = process.env.PORT || 3000; // Use port from environment variable or default to 3000
+app.listen(PORT, () => {
+    console.log(`Express server running on port ${PORT}`);
+});
 //variable to store the deck
 let deck = [];
 
@@ -76,7 +100,9 @@ let gameData = {
 //now lets fill those with a /strt
 
 app.get("/start",(req,res)=>{
-    gameData.start = true;
+    eventSource.addEventListener("message",event =>{
+        console.log("Starting dealer")
+    })
     dealer.dealerHand[0] = deck.pop();
     user.userHand[0] = deck.pop();
     dealer.dealerHand[1] = deck.pop();
@@ -158,12 +184,16 @@ app.get("/win",(req,res)=>{
 function createCard(){
     dealer.dealerImg,user.userImg = [];
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
-        let img =  "/cards/"+dealer.dealerHand[i]+".png";
+        let img =  "/cassinoServer/cards/"+dealer.dealerHand[i]+".png";
+        //on mac
+        //let img = "/cards/"+dealer.dealerHand[i]+".png";
         dealer.dealerImg.push(img);
+        console.log(dealer.dealerImg);
     }
     for(i = 0 ; i < user.userHand.length ; i++){
-      let img = "/cards/"+user.userHand[i]+".png";
+      let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
        user.userImg.push(img);
+       console.log(user.userImg);
     }
 }
 
@@ -193,13 +223,21 @@ function checkBust(){
 //this part is where we will determine a stay call. Once a stay call is called,
 //it is the dealers turn
 
-app,get("/stay",(req,res)=>{
+app.get("/stay",(req,res)=>{
     //we need to make it so that the dealer can now go
+    res.send(200,"Ok");
 })
 
 
+//Now we must work on the dealer side
+//first we need to display the dealers cards
 
-
+app.get("/getStats",(req,res)=>{
+    if(gameData.start == true){
+        res.type("json");
+        res.send(dealer);
+    }
+})
 
 
 

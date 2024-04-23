@@ -21,7 +21,7 @@ async function setStart() {
     try {
         while (!data || data.some(card => card === '/cassinoServer/cards/undefined.png')) {
             console.log("trying");
-            const response = await fetch("http://localhost:5000/dealerPage");
+            const response = await fetch("http://localhost:5000/getStats");
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
             }

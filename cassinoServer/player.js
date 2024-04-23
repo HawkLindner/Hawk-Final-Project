@@ -5,10 +5,9 @@ let user = {};
 const startBtn = document.getElementById("start");
 startBtn.addEventListener("click",async()=>{
     try{
-    const start = await fetch("http://localhost:5000/start");
+    const start = await fetch("http://localhost:3000/start");
     user = await start.json();
     printCards();
-    checkWin()
     console.log(user);
     }
     catch{"ERROR"}
@@ -18,13 +17,15 @@ startBtn.addEventListener("click",async()=>{
 //page
 let shown = document.getElementById("Pcards");
 async function printCards(){
-    removeCards(shown);
     let score = document.getElementById("Pscore");
     for(i = 0 ; i < user.userImg.length ; i++){
         let img = document.createElement("img");
         const imageUrl = user.userImg[i];
-        const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cards"));
+        const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cassinoServer"));
+        //below is for mac
+        //const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cards"));
         img.src = trimmedUrl;
+        console.log(img);
         shown.append(img);
     }
     score.innerText = "";
@@ -44,25 +45,36 @@ const hitBtn = document.getElementById("hit");
 hitBtn.addEventListener("click",async ()=>{
     console.log("in");
     try{
-        const hitData = await fetch("http://localhost:5000/hit")
+        const hitData = await fetch("http://localhost:3000/hit")
         user = await hitData.json()
         console.log(user);
+        removeCards();
         printCards();
         checkBust();
 
     }catch{"ERROR"}
 })
-async function removeCards(shown) {
+async function removeCards() {
     while (shown.firstChild) {
         shown.removeChild(shown.firstChild);
     }
 }
+
 async function checkBust(){
     if(user.userSum > 21){
         hitBtn.disabled = true;
     }
 }
 
+//now I will be working on the stay feature
+const stayBtn = document.getElementById("stay");
+stayBtn.addEventListener("click",async()=>{
+    console.log("in the stay function");
+    try {
+    } catch {
+        
+    }
+})
 
 
 
