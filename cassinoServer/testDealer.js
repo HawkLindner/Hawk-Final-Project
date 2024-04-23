@@ -10,7 +10,7 @@
 //that we are starting the game over and starting the interval up again to search.
 let cardsOut = [];
 let imgArr = [];
-let hiddenCard = "/BackOfCard.jpg"
+let hiddenCard = "/cassinoServer/BackOfCard.jpg"
 let table = document.getElementById("table");
 let updateTimer;
 let start = setTimeout(setStart, 1000); // Adjust the timeout duration as needed
@@ -19,7 +19,7 @@ let start = setTimeout(setStart, 1000); // Adjust the timeout duration as needed
 async function setStart() {
     let data;
     try {
-        while (!data || data.some(card => card === '/cards/undefined.png')) {
+        while (!data || data.some(card => card === '/cassinoServer/cards/undefined.png')) {
             console.log("trying");
             const response = await fetch("http://localhost:5000/dealerPage");
             if (!response.ok) {
@@ -34,7 +34,7 @@ async function setStart() {
 
         // Clear the interval
         clearTimeout(start);
-        updateTimer = setTimeout(updateData,1000);
+        updateTimer = setInterval(updateData,1000);
     } catch (error) {
         console.error('Error fetching data:', error.message);
         // You may handle the error as per your application's requirements
@@ -43,21 +43,19 @@ async function setStart() {
 async function updateData(){
     let input;
     try{
-        while (input === undefined) {
+        while (input == undefined) {
             console.log("Trying to update");
             const responseInput = await fetch("http://localhost:5000/check");
             if (!responseInput.ok) {
                 throw new Error('Failed to fetch data');
             }
-            input = await responseInput.json();
-            console.log(input);
-            await new Promise(resolve1 => setTimeout(resolve1, 1000));
+            input = await responseInput.text();
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         processData(input);
-        console.log(input);
         
-        clearTimeout(updateTimer);
+        clearInterval(updateTimer);
     }        
     catch(error){
         console.error("error fetching data ",error.message);

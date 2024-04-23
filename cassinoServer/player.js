@@ -30,21 +30,21 @@ start.addEventListener("click",async() =>{
     //here we are going to send that we want to start the game, this will tell
     //the server to deal us 2 cards and to deal the dealer 2 cards
     //server will then calculate sums, and variables of the game
-    await fetch("http://localhost:5000/start")
-    .then(statusCheck)
-    .catch(handleError); 
-    //now we are gonna start getting some of the variables back and then we can
-    //do what the server wants, if certian variables are called from the server
-    //here we will emulate if the game is over, of if the user can hit or stand
-    const gameStatsResponse = await fetch("http://localhost:5000/gameStats");
-    const gameStatsData = await gameStatsResponse.json();
-    updateData(gameStatsData); // Pass game stats data to updateData
+    // await fetch("http://localhost:5000/start")
+    // .then(statusCheck)
+    // .catch(handleError); 
+    // //now we are gonna start getting some of the variables back and then we can
+    // //do what the server wants, if certian variables are called from the server
+    // //here we will emulate if the game is over, of if the user can hit or stand
+    // const gameStatsResponse = await fetch("http://localhost:5000/gameStats");
+    // const gameStatsData = await gameStatsResponse.json();
+    // updateData(gameStatsData); // Pass game stats data to updateData
 
-    //here we can add our if statements to go to 2 different types of games. one will
-    //be an end game screen or will allow the user to continue hitting or stay
+    // //here we can add our if statements to go to 2 different types of games. one will
+    // //be an end game screen or will allow the user to continue hitting or stay
 
 
-    fetch("http://localhost:5000/userPage")
+    fetch("http://localhost:5000/start")
     .then(data => data.json())
     .then(processData)
     .catch(handleError);
