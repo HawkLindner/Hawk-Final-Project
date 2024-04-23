@@ -1,47 +1,51 @@
-const cors = require("cors"); // Import the cors middleware
+// Import required modules
+const cors = require("cors");
 const express = require("express");
+const http = require("http"); // Import the http module
+const WebSocket = require("ws");
+
+// Create Express app
 const app = express();
 const port = 3000;
-app.use(cors()); // Enable CORS for all routes
-var bodyParser = require('body-parser')
 
-//const multer = require("multer");
-// for application/x-ww-form-urlencoded
-app. use(express. urlencoded({ extended: true })); // built-in middleware
-// for application/json
-app.use(express.json()); // built-in middleware
-// // for multipart/form-data (required with FormData)
-// app.use (multer() . none()); // requires the "multer" module
+// Enable CORS
+app.use(cors());
 
-// app.listen(port, () => {
-//     console.log(`Server running at http://localhost:${port}`);
-//     shuffleDeck();
-// });
+// Middleware for parsing request bodies
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
+// Create HTTP server
 const server = http.createServer(app);
-const wss = new WebSocket.Server((server));
 
-//websocket connetion event handler
-wss.on('connection',(ws)=>{
-    console.log("player connected");
+// Create WebSocket server
+const wss = new WebSocket.Server({ server }); // Pass the HTTP server instance
 
-    ws.on('message',(message)=>{
-        console.log("recieved", message);
+// WebSocket connection event handler
+wss.on('connection', (ws) => {
+    console.log("Player connected");
 
-        wss.clients.forEach((client =>{
-            if(client !== ws && client.readyState === WebSocket.OPEN){
+    ws.on('message', (message) => {
+        console.log("Received:", message);
+
+        // Broadcast the message to all connected clients
+        wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
                 client.send(message);
             }
-        }))
+        });
     });
-    ws.on('close',()=>{
-        console.log("client gone");
-    })
-})
-const PORT = process.env.PORT || 3000; // Use port from environment variable or default to 3000
-app.listen(PORT, () => {
-    console.log(`Express server running on port ${PORT}`);
+
+    ws.on('close', () => {
+        console.log("Client disconnected");
+    });
 });
+
+// Start the server
+server.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+
 //variable to store the deck
 let deck = [];
 
@@ -100,9 +104,8 @@ let gameData = {
 //now lets fill those with a /strt
 
 app.get("/start",(req,res)=>{
-    eventSource.addEventListener("message",event =>{
-        console.log("Starting dealer")
-    })
+    shuffleDeck();
+    gameData.start = true;
     dealer.dealerHand[0] = deck.pop();
     user.userHand[0] = deck.pop();
     dealer.dealerHand[1] = deck.pop();
@@ -110,8 +113,7 @@ app.get("/start",(req,res)=>{
     findSum();
     createCard();
     win();
-    console.log(user);
-    console.log(dealer);
+
     if(user.win == true || dealer.win == true){
         res.redirect("/win");
     }else{
@@ -124,9 +126,11 @@ app.get("/start",(req,res)=>{
 //we need to add a few functions at the start of the game
 //  1. We need to find the sum of the cards
 function findSum(){
-    dealer.dealerSum, user.userSum = 0;
+    let value;
+    dealer.dealerSum=0;
+     user.userSum = 0;
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
-        let value = dealer.dealerHand[i].split("-");
+        value = dealer.dealerHand[i].split("-");
         if(isNaN(value[0])){
             if(value[0] === 'A'){
                 dealer.dealerSum += parseInt(11);
@@ -182,18 +186,18 @@ app.get("/win",(req,res)=>{
 
 //now lets create the card img to be sent over
 function createCard(){
-    dealer.dealerImg,user.userImg = [];
+    dealer.dealerImg = [];
+    user.userImg = [];
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
         let img =  "/cassinoServer/cards/"+dealer.dealerHand[i]+".png";
         //on mac
         //let img = "/cards/"+dealer.dealerHand[i]+".png";
         dealer.dealerImg.push(img);
-        console.log(dealer.dealerImg);
+
     }
     for(i = 0 ; i < user.userHand.length ; i++){
       let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
        user.userImg.push(img);
-       console.log(user.userImg);
     }
 }
 
@@ -205,7 +209,6 @@ app.get("/hit",(req,res)=>{
     findSum();
     createCard();
     checkBust();
-    console.log(user)
     res.type("json");
     res.send(user);
 })
@@ -224,11 +227,19 @@ function checkBust(){
 //it is the dealers turn
 
 app.get("/stay",(req,res)=>{
-    //we need to make it so that the dealer can now go
-    res.send(200,"Ok");
+    dealerTurn();
+    
 })
 
-
+function dealerTurn(){
+    console.log("in");
+        let iter = dealer.dealerHand.length;
+        while(dealer.dealerSum < 17){
+            dealer.dealerHand[iter] = deck.pop();
+            findSum();
+            createCard();
+        }
+    }
 //Now we must work on the dealer side
 //first we need to display the dealers cards
 
@@ -239,6 +250,35 @@ app.get("/getStats",(req,res)=>{
     }
 })
 
+//now we will add the clear functions
+app.get("/clear",(req,res)=>{
+    dealer = {
+        dealerHand : [],
+        dealerImg : [],
+        dealerAce : false,
+        dealerSum : 0,
+        win : false,
+        winMsg : "Dealer Wins",
+    }
+    
+    user = {
+        userHand : [],
+        userImg : [],
+        userAce : false,
+        userSum : 0,
+        win : false,
+        winMsg : "User Wins",
+    }
+    gameData = {
+        dealer : dealer,
+        user : user,
+        start : false,
+        stay : false,
+    }
+    console.log(gameData)
+    console.log(user)
+    console.log(dealer);
+})
 
 
 

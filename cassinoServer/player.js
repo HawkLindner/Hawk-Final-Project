@@ -68,15 +68,23 @@ async function checkBust(){
 
 //now I will be working on the stay feature
 const stayBtn = document.getElementById("stay");
-stayBtn.addEventListener("click",async()=>{
+stayBtn.addEventListener("click",()=>{
     console.log("in the stay function");
     try {
+        const stay = fetch("http://localhost:3000/stay");
     } catch {
         
     }
 })
 
-
+//now i will add the clear btn
+const clearBtn = document.getElementById("clear");
+clearBtn.addEventListener('click',()=>{
+    console.log("Clear hit");
+    try{
+        const clear = fetch("http://localhost:3000/stay");
+    }catch{}
+})
 
 
 

@@ -1,11 +1,26 @@
+const ws = new WebSocket("ws://localhost:3000");
+ws.addEventListener('open',()=>{
+    console.log("connected");
+})
+ws.addEventListener("message",(event)=>{
+    console.log("recieved: ", event.data);
+})
+ws.addEventListener("close",()=>{
+    console.log("Disconnected");
+})
+
+
+
 //to start off we need to start collecting data while we wait for the server to star
-let startTimeout = setTimeout(start, 3000);
+//let startTimeout = setTimeout(start, 3000);
+let startInt = setInterval(start,2000);
 let dealer = {};
+let imgArr = [];
 
 async function start() {
     let data;
     try {
-        while (data == undefined) {
+        // while (data == undefined) {
             console.log(data);
             const response = await fetch("http://localhost:3000/getStats");
             if (!response.ok) {
@@ -14,8 +29,8 @@ async function start() {
             data = await response.json();
             dealer = data;
             await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        clearTimeout(startTimeout);
+        //}
+       // clearTimeout(startTimeout);
     } catch (error) {
         console.error("Error:", error);
     }
@@ -26,7 +41,11 @@ async function start() {
 
 let shown = document.getElementById("Dcards");
 async function printCards(){
+    removeCards();
     let score = document.getElementById("score");
+    
+    console.log(dealer.dealerImg);
+    
     for(i = 0 ; i < dealer.dealerImg.length ; i++){
         let img = document.createElement("img");
         const imageUrl = dealer.dealerImg[i];
@@ -41,7 +60,7 @@ async function printCards(){
 
     //still need to calculate hidden sum
 }
-async function removeCards(shown) {
+async function removeCards() {
     while (shown.firstChild) {
         shown.removeChild(shown.firstChild);
     }
