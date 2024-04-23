@@ -69,11 +69,14 @@ let user = {
 }
 let gameData = {
     dealer : dealer,
-    user : user
+    user : user,
+    start : false,
+    stay : false,
 }
 //now lets fill those with a /strt
 
 app.get("/start",(req,res)=>{
+    gameData.start = true;
     dealer.dealerHand[0] = deck.pop();
     user.userHand[0] = deck.pop();
     dealer.dealerHand[1] = deck.pop();
@@ -95,6 +98,7 @@ app.get("/start",(req,res)=>{
 //we need to add a few functions at the start of the game
 //  1. We need to find the sum of the cards
 function findSum(){
+    dealer.dealerSum, user.userSum = 0;
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
         let value = dealer.dealerHand[i].split("-");
         if(isNaN(value[0])){
@@ -139,10 +143,12 @@ function win(){
 //here we are going to redirect them to this page if there is a winner
 app.get("/win",(req,res)=>{
     if(dealer.win == true){
+        gameData.start = false;
         res.type("text");
         res.send(dealer.winMsg);
     }
     else{
+        gameData.
         res.type("text");
         res.send(user.winMsg);
     }
@@ -150,14 +156,46 @@ app.get("/win",(req,res)=>{
 
 //now lets create the card img to be sent over
 function createCard(){
+    dealer.dealerImg,user.userImg = [];
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
-        dealer.dealerHand[i].src = "/cards/"+dealer.dealerHand[i]+".png"
-        dealer.dealerImg.push(dealer.dealerHand[i].src);
+        let img =  "/cards/"+dealer.dealerHand[i]+".png";
+        dealer.dealerImg.push(img);
     }
     for(i = 0 ; i < user.userHand.length ; i++){
-       
+      let img = "/cards/"+user.userHand[i]+".png";
+       user.userImg.push(img);
     }
 }
+
+//now that we have the start of the game all set and the user is getting 2 cards
+//lets add in the functionallity of the hit feature
+app.get("/hit",(req,res)=>{
+    let count = user.userHand.length;
+    user.userHand[count] = deck.pop();
+    findSum();
+    createCard();
+    checkBust();
+    console.log(user)
+    res.type("json");
+    res.send(user);
+})
+function checkBust(){
+    if(user.userSum > 21 && user.userAce == false){
+        dealer.win = true;
+        gameData.start = false;
+    }
+    else if(user.userSum > 21 && user.userAce == true){
+        user.userSum -= parseInt(10);
+        user.userAce = false;
+    }
+}
+
+//this part is where we will determine a stay call. Once a stay call is called,
+//it is the dealers turn
+
+app,get("/stay",(req,res)=>{
+    //we need to make it so that the dealer can now go
+})
 
 
 
