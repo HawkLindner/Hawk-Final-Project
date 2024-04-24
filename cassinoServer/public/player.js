@@ -5,12 +5,13 @@ let user = {};
 const startBtn = document.getElementById("start");
 startBtn.addEventListener("click",async()=>{
     try{
-    const start = await fetch("http://localhost:3000/start");
+    const start = await fetch("/start");
     user = await start.json();
     printCards();
     console.log(user);
     }
     catch{"ERROR"}
+    startBtn.disabled = true;
 })
 
 //now that we are getting the data sent over, we need to display these img in our
@@ -45,7 +46,7 @@ const hitBtn = document.getElementById("hit");
 hitBtn.addEventListener("click",async ()=>{
     console.log("in");
     try{
-        const hitData = await fetch("http://localhost:3000/hit")
+        const hitData = await fetch("/hit")
         user = await hitData.json()
         console.log(user);
         removeCards();
@@ -63,6 +64,7 @@ async function removeCards() {
 async function checkBust(){
     if(user.userSum > 21){
         hitBtn.disabled = true;
+
     }
 }
 
@@ -71,10 +73,14 @@ const stayBtn = document.getElementById("stay");
 stayBtn.addEventListener("click",()=>{
     console.log("in the stay function");
     try {
-        const stay = fetch("http://localhost:3000/stay");
+        const stay = fetch("/stay");
     } catch {
         
     }
+    stayBtn.disabled = true;
+    hitBtn.disabled = true;
+    startBtn.disabled = true;
+    clearBtn.disabled = false;
 })
 
 //now i will add the clear btn
@@ -82,10 +88,14 @@ const clearBtn = document.getElementById("clear");
 clearBtn.addEventListener('click',()=>{
     console.log("Clear hit");
     try{
-        fetch("http://localhost:3000/clear");
+        fetch("/clear");
     }catch{}
     removeCards();
     Pscore.innerText = "";
+    startBtn.disabled = false;
+    clearBtn.disabled = true;
+    hitBtn.disabled = false;
+    stayBtn.disabled = false;
 })
 
 

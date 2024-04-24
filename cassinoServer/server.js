@@ -1,19 +1,18 @@
 const cors = require("cors");
 const express = require("express");
 const http = require("http");
-const WebSocket = require("ws");    //websocket is for dealer
-const app = express();              //express is for user
+const app = express();   
+app.use('/public',express.static('public'));
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
 
-server.listen(PORT, () => {
+
+app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
   });
 
@@ -42,31 +41,15 @@ let gameData = {
     stay : false,
 }
 
+app.get("/getDealerState",(req,res)=>{
+    res.type("json");
+    res.send(dealer);
+});
+
 //variable to store the deck
 let deck = [];
 
-function sendDataToClients(data) {
-    // Convert data to JSON string
-    const jsonString = JSON.stringify(data);
-
-    // When a new client connects
-    wss.on('connection', function connection(ws) {
-        console.log('A new client connected');
-
-        // When the WebSocket connection is opened
-        ws.on('open', function() {
-            // Send the JSON string to all connected clients
-            wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(jsonString);
-                }
-            });
-
-            // Close the WebSocket connection after sending data
-            ws.close();
-        });
-    });
-}
+//}
 //lets construct and shuffle deck
 function shuffleDeck(){
     deck = buildDeck();
@@ -102,20 +85,8 @@ app.get("/start",(req,res)=>{
     findSum();
     createCard();
     win();
-
-   // if(user.win == true || dealer.win == true){
-        //res.redirect("/win");
-    //}else{
-        // sendDataToClients(dealer);
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(dealer));
-            }
-        });
-        wss.close();
-        res.type("json");
-        res.send(user);
-   // }
+    res.type("json");
+    res.send(user);
     
 });
 //we need to add a few functions at the start of the game
@@ -171,15 +142,15 @@ function createCard(){
     dealer.dealerImg = [];
     user.userImg = [];
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
-        let img =  "/cassinoServer/cards/"+dealer.dealerHand[i]+".png";
+        //let img =  "/cassinoServer/cards/"+dealer.dealerHand[i]+".png";
         //on mac
-        //let img = "/cards/"+dealer.dealerHand[i]+".png";
+        let img = "/public/cards/"+dealer.dealerHand[i]+".png";
         dealer.dealerImg.push(img);
 
     }
     for(i = 0 ; i < user.userHand.length ; i++){
-      let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
-      // let img = "/cards/"+user.userHand[i]+".png";
+      //let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
+       let img = "/public/cards/"+user.userHand[i]+".png";
        user.userImg.push(img);
     }
 }
@@ -227,13 +198,7 @@ function checkBust(){
 
 app.get("/stay",(req,res)=>{
     dealerTurn();
-    //sendDataToClients(dealer);
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(dealer));
-        }
-    });
-    wss.close();
+    res.send();
 })
 
 function dealerTurn(){
@@ -259,13 +224,6 @@ app.get("/clear",(req,res)=>{
         winMsg : "Dealer Wins",
         clear : false,
     }
-    //sendDataToClients(dealer);
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(dealer));
-        }
-    });
-    wss.close();
     console.log("Clear sent");
     user = {
         userHand : [],
@@ -281,4 +239,5 @@ app.get("/clear",(req,res)=>{
         start : false,
         stay : false,
     }
+    res.send();
 });
