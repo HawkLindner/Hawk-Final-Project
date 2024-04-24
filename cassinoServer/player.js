@@ -82,8 +82,10 @@ const clearBtn = document.getElementById("clear");
 clearBtn.addEventListener('click',()=>{
     console.log("Clear hit");
     try{
-        const clear = fetch("http://localhost:3000/stay");
+        fetch("http://localhost:3000/clear");
     }catch{}
+    removeCards();
+    Pscore.innerText = "";
 })
 
 

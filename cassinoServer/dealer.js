@@ -1,28 +1,35 @@
 const sock = new WebSocket("ws://localhost:3000"); // Corrected WebSocket URL
 
-
-
-
-sock.addEventListener('message', (event) => {
-    dealer = JSON.parse(event.data); // Parse the received JSON data
-    startGame();
-});
+//variables
+let dealer = {};
+let shown = document.getElementById("Dcards");
 
 sock.addEventListener('open', () => {
     sock.send("Connected");
+});
+
+sock.addEventListener('message', (event) => {
+    dealer = JSON.parse(event.data); // Parse the received JSON data
+    console.log(dealer);
+    if(dealer.clear == true){
+        reload();
+        console.log("we here");
+    }
+    else{
+        startGame();
+    }
 });
 
 sock.addEventListener('close', () => {
     console.log('Disconnected from WebSocket');
 });
 
-let dealer = {};
 function startGame(){
     console.log(dealer);
     printCards();
 
 }
-let shown = document.getElementById("Dcards");
+
 function printCards(){
     removeCards();
     let score = document.getElementById("score");
@@ -46,5 +53,23 @@ function printCards(){
 function removeCards() {
     while (shown.firstChild) {
         shown.removeChild(shown.firstChild);
+    }
+}
+
+function reload(){
+    removeCards();
+    score.innerText = "";
+    reloadPageOnce();
+}
+
+let isReloaded = false;
+
+function reloadPageOnce() {
+    console.log("Reload");
+    if (!isReloaded) {
+        // Reload the page
+        window.location.reload();
+        // Set the flag to true to indicate that the page has been reloaded
+        isReloaded = true;
     }
 }

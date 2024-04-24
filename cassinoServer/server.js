@@ -1,9 +1,8 @@
 const cors = require("cors");
 const express = require("express");
 const http = require("http");
-const WebSocket = require("ws");
-
-const app = express();
+const WebSocket = require("ws");    //websocket is for dealer
+const app = express();              //express is for user
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -14,6 +13,12 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 
+server.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+
+//variables
+
 let dealer = {
     dealerHand : [],
     dealerImg : [],
@@ -21,28 +26,47 @@ let dealer = {
     dealerSum : 0,
     win : false,
     winMsg : "Dealer Wins",
-    start : false
 }
+let user = {
+    userHand : [],
+    userImg : [],
+    userAce : false,
+    userSum : 0,
+    win : false,
+    winMsg : "User Wins",
+}
+let gameData = {
+    dealer : dealer,
+    user : user,
+    start : false,
+    stay : false,
+}
+
+//variable to store the deck
+let deck = [];
 
 function sendDataToClients(data) {
     // Convert data to JSON string
     const jsonString = JSON.stringify(data);
 
-    // Send the JSON string to all connected clients
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(jsonString);
-        }
+    // When a new client connects
+    wss.on('connection', function connection(ws) {
+        console.log('A new client connected');
+
+        // When the WebSocket connection is opened
+        ws.on('open', function() {
+            // Send the JSON string to all connected clients
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(jsonString);
+                }
+            });
+
+            // Close the WebSocket connection after sending data
+            ws.close();
+        });
     });
 }
-server.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
-
-//variable to store the deck
-let deck = [];
-
-
 //lets construct and shuffle deck
 function shuffleDeck(){
     deck = buildDeck();
@@ -68,31 +92,9 @@ function shuffleDeck(){
     return deck;
 }
 
-//now that we have a deck lets create variables for the hands that are on the table
-//and account for ace
-
-
-
-let user = {
-    userHand : [],
-    userImg : [],
-    userAce : false,
-    userSum : 0,
-    win : false,
-    winMsg : "User Wins",
-}
-let gameData = {
-    dealer : dealer,
-    user : user,
-    start : false,
-    stay : false,
-}
 //now lets fill those with a /strt
-
 app.get("/start",(req,res)=>{
     shuffleDeck();
-    dealer.start = true;
-    
     dealer.dealerHand[0] = deck.pop();
     user.userHand[0] = deck.pop();
     dealer.dealerHand[1] = deck.pop();
@@ -101,15 +103,20 @@ app.get("/start",(req,res)=>{
     createCard();
     win();
 
-    if(user.win == true || dealer.win == true){
-        res.redirect("/win");
-    }else{
-        sendDataToClients(dealer);
+   // if(user.win == true || dealer.win == true){
+        //res.redirect("/win");
+    //}else{
+        // sendDataToClients(dealer);
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(dealer));
+            }
+        });
         res.type("json");
         res.send(user);
-    }
+   // }
     
-})
+});
 //we need to add a few functions at the start of the game
 //  1. We need to find the sum of the cards
 function findSum(){
@@ -156,20 +163,7 @@ function win(){
     else if(user.userSum == 21){
         user.win = true;
     } 
-}
-//here we are going to redirect them to this page if there is a winner
-app.get("/win",(req,res)=>{
-    if(dealer.win == true){
-        gameData.start = false;
-        res.type("text");
-        res.send(dealer.winMsg);
-    }
-    else{
-        gameData.
-        res.type("text");
-        res.send(user.winMsg);
-    }
-})  
+};
 
 //now lets create the card img to be sent over
 function createCard(){
@@ -188,6 +182,22 @@ function createCard(){
        user.userImg.push(img);
     }
 }
+
+//here we are going to redirect them to this page if there is a winner
+// app.get("/win",(req,res)=>{
+//     if(dealer.win == true){
+//         gameData.start = false;
+//         res.type("text");
+//         res.send(dealer.winMsg);
+//     }
+//     else{
+//         gameData.
+//         res.type("text");
+//         res.send(user.winMsg);
+//     }
+// })  
+
+
 
 //now that we have the start of the game all set and the user is getting 2 cards
 //lets add in the functionallity of the hit feature
@@ -216,8 +226,12 @@ function checkBust(){
 
 app.get("/stay",(req,res)=>{
     dealerTurn();
-    sendDataToClients(dealer);
-    
+    //sendDataToClients(dealer);
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(dealer));
+        }
+    });
 })
 
 function dealerTurn(){
@@ -241,8 +255,15 @@ app.get("/clear",(req,res)=>{
         dealerSum : 0,
         win : false,
         winMsg : "Dealer Wins",
+        clear : false,
     }
-    
+    //sendDataToClients(dealer);
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(dealer));
+        }
+    });
+    console.log("Clear sent");
     user = {
         userHand : [],
         userImg : [],
@@ -257,5 +278,4 @@ app.get("/clear",(req,res)=>{
         start : false,
         stay : false,
     }
-    sendDataToClients(dealer);
 });
