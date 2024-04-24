@@ -116,9 +116,9 @@ function printCards(){
     for(i = 0 ; i < dealer.dealerImg.length ; i++){
         let img = document.createElement("img");
         const imageUrl = dealer.dealerImg[i];
-        //const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cassinoServer"));
+        const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cassinoServer"));
         //below is for mac
-        const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cards"));
+        //const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cards"));
         img.src = trimmedUrl;
         shown.append(img);
     }

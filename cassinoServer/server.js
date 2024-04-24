@@ -178,8 +178,8 @@ function createCard(){
 
     }
     for(i = 0 ; i < user.userHand.length ; i++){
-      //let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
-       let img = "/cards/"+user.userHand[i]+".png";
+      let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
+      // let img = "/cards/"+user.userHand[i]+".png";
        user.userImg.push(img);
     }
 }
