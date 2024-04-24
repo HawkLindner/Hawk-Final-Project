@@ -112,6 +112,7 @@ app.get("/start",(req,res)=>{
                 client.send(JSON.stringify(dealer));
             }
         });
+        wss.close();
         res.type("json");
         res.send(user);
    // }
@@ -232,6 +233,7 @@ app.get("/stay",(req,res)=>{
             client.send(JSON.stringify(dealer));
         }
     });
+    wss.close();
 })
 
 function dealerTurn(){
@@ -263,6 +265,7 @@ app.get("/clear",(req,res)=>{
             client.send(JSON.stringify(dealer));
         }
     });
+    wss.close();
     console.log("Clear sent");
     user = {
         userHand : [],
