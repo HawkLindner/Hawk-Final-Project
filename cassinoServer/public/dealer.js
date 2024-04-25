@@ -1,4 +1,3 @@
-// const sock = new WebSocket("ws://localhost:3000"); // Corrected WebSocket URL
 
 // Define score in the global scope
 let score;
@@ -8,19 +7,19 @@ let dealer = {};
 let shown = document.getElementById("Dcards");
 
 function updateState(){
-
-        fetch("/getDealerState")
+        fetch("http://localhost:3000/getDealerState")
+        //fetch("/getDealerState")
         .then(res => res.json())
         .then((data) => {
             dealer = data;
+            console.log(dealer);
             startGame();
         });
 
 }
-//setInterval(updateState, 500);
+setInterval(updateState, 2000);
 
 function startGame(){
-    console.log(dealer);
     printCards();
 }
 

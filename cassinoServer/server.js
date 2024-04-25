@@ -23,7 +23,6 @@ let dealer = {
     dealerImg : [],
     dealerAce : false,
     dealerSum : 0,
-    win : false,
     winMsg : "Dealer Wins",
 }
 let user = {
@@ -34,14 +33,9 @@ let user = {
     win : false,
     winMsg : "User Wins",
 }
-let gameData = {
-    dealer : dealer,
-    user : user,
-    start : false,
-    stay : false,
-}
 
 app.get("/getDealerState",(req,res)=>{
+    console.log(dealer);
     res.type("json");
     res.send(dealer);
 });
@@ -74,13 +68,14 @@ function shuffleDeck(){
     }
     return deck;
 }
-
+let temp;
 //now lets fill those with a /strt
 app.get("/start",(req,res)=>{
     shuffleDeck();
+    dealer.turn = false;
     dealer.dealerHand[0] = deck.pop();
     user.userHand[0] = deck.pop();
-    dealer.dealerHand[1] = deck.pop();
+    temp = deck.pop();
     user.userHand[1] = deck.pop();
     findSum();
     createCard();
@@ -184,8 +179,8 @@ app.get("/hit",(req,res)=>{
 })
 function checkBust(){
     if(user.userSum > 21 && user.userAce == false){
-        dealer.win = true;
-        gameData.start = false;
+        dealerTurn();
+        
     }
     else if(user.userSum > 21 && user.userAce == true){
         user.userSum -= parseInt(10);
@@ -203,6 +198,8 @@ app.get("/stay",(req,res)=>{
 
 function dealerTurn(){
     console.log("in");
+    dealer.dealerHand.push(temp);
+    console.log(dealer.dealerHand)
         let iter = dealer.dealerHand.length;
         while(dealer.dealerSum < 17){
             dealer.dealerHand[iter] = deck.pop();
@@ -222,7 +219,7 @@ app.get("/clear",(req,res)=>{
         dealerSum : 0,
         win : false,
         winMsg : "Dealer Wins",
-        clear : false,
+        turn : false,
     }
     console.log("Clear sent");
     user = {
@@ -233,11 +230,6 @@ app.get("/clear",(req,res)=>{
         win : false,
         winMsg : "User Wins",
     }
-    gameData = {
-        dealer : dealer,
-        user : user,
-        start : false,
-        stay : false,
-    }
     res.send();
 });
+
