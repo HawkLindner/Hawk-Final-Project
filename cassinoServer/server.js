@@ -23,19 +23,16 @@ let dealer = {
     dealerImg : [],
     dealerAce : false,
     dealerSum : 0,
-    winMsg : "Dealer Wins",
+    winMsg : "",
 }
 let user = {
     userHand : [],
     userImg : [],
     userAce : false,
     userSum : 0,
-    win : false,
-    winMsg : "User Wins",
 }
 
 app.get("/getDealerState",(req,res)=>{
-    console.log(dealer);
     res.type("json");
     res.send(dealer);
 });
@@ -122,49 +119,20 @@ function findSum(){
     }
 }
 
-//now that we have a valid way to check to see our sums we will write a function to check for 21
-function win(){
-    if(dealer.dealerSum == 21){
-        dealer.win = true;
-    }
-    else if(user.userSum == 21){
-        user.win = true;
-    } 
-};
 
 //now lets create the card img to be sent over
 function createCard(){
     dealer.dealerImg = [];
     user.userImg = [];
     for(i = 0 ; i < dealer.dealerHand.length ; i++){
-        //let img =  "/cassinoServer/cards/"+dealer.dealerHand[i]+".png";
-        //on mac
         let img = "/public/cards/"+dealer.dealerHand[i]+".png";
         dealer.dealerImg.push(img);
-
     }
     for(i = 0 ; i < user.userHand.length ; i++){
-      //let img = "/cassinoServer/cards/"+user.userHand[i]+".png";
        let img = "/public/cards/"+user.userHand[i]+".png";
        user.userImg.push(img);
     }
 }
-
-//here we are going to redirect them to this page if there is a winner
-// app.get("/win",(req,res)=>{
-//     if(dealer.win == true){
-//         gameData.start = false;
-//         res.type("text");
-//         res.send(dealer.winMsg);
-//     }
-//     else{
-//         gameData.
-//         res.type("text");
-//         res.send(user.winMsg);
-//     }
-// })  
-
-
 
 //now that we have the start of the game all set and the user is getting 2 cards
 //lets add in the functionallity of the hit feature
@@ -180,11 +148,16 @@ app.get("/hit",(req,res)=>{
 function checkBust(){
     if(user.userSum > 21 && user.userAce == false){
         dealerTurn();
+        winner();
         
     }
     else if(user.userSum > 21 && user.userAce == true){
         user.userSum -= parseInt(10);
         user.userAce = false;
+    }
+    else if (dealer.dealerSum > 21 && dealerAce == true){
+        dealer.dealerSum -= parseInt(10);
+        dealer.dealerAce = false;
     }
 }
 
@@ -197,29 +170,31 @@ app.get("/stay",(req,res)=>{
 })
 
 function dealerTurn(){
-    console.log("in");
     dealer.dealerHand.push(temp);
+    findSum();
+    createCard();
+    checkBust();
     console.log(dealer.dealerHand)
         let iter = dealer.dealerHand.length;
         while(dealer.dealerSum < 17){
+            // if(dealer.dealerSum > 16){
+            //     break;
+            // }
             dealer.dealerHand[iter] = deck.pop();
             findSum();
             createCard();
+            console.log(dealer.dealerSum)
         }
+        winner();
     }
-//Now we must work on the dealer side
-//first we need to display the dealers cards
-
-//now we will add the clear functions
+    
 app.get("/clear",(req,res)=>{
     dealer = {
         dealerHand : [],
         dealerImg : [],
         dealerAce : false,
         dealerSum : 0,
-        win : false,
-        winMsg : "Dealer Wins",
-        turn : false,
+        winMsg : "",
     }
     console.log("Clear sent");
     user = {
@@ -227,9 +202,29 @@ app.get("/clear",(req,res)=>{
         userImg : [],
         userAce : false,
         userSum : 0,
-        win : false,
-        winMsg : "User Wins",
     }
     res.send();
 });
 
+function winner(){
+    console.log("Dealer " + dealer.dealerSum);
+    console.log("user " + user.userSum);
+    if(dealer.dealerSum > 21 && user.userSum < 22){
+        dealer.winMsg = "User wins, Dealer Bust";
+    }
+    else if (user.userSum > 21){
+        dealer.winMsg = "Dealer wins. Nice bust fool";
+    }
+    else if(user.userSum < 22 && user.userSum > dealer.dealerSum){
+        dealer.winMsg = "You got me this time, nice win";
+    }
+    else if(user.userSum == dealer.dealerSum){
+        dealer.winMsg = "I win ties sucker";
+    }
+    else if(dealer.dealerHand.length == 2 && dealer.dealerSum == 21){
+        dealer.winMsg = "I win... Blackjack";
+    }
+    else if(dealer.dealerSum > user.userSum && dealer.dealerSum<22){
+        dealer.winMsg = "Dealer wins. Skill issue maybe?";
+    }
+}

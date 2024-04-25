@@ -13,19 +13,23 @@ li{
 }
 body{
     background-color: #35654d;
-    
 }
+#Pcards>img{
+    width:200px;
+    height:250px;
+    margin : 5pt;
+   }
 @media only screen and (max-width: 600px) {
    #Pcards{
     display:flex;
     align-items: center;
     justify-content: center;
     flex-wrap:wrap;
-    margin-top:10vh;
+    margin-top:7vh;
    }
    #Pcards>img{
-    width:150px;
-    height:200px;
+    width:125px;
+    height : 175px;
     margin : 5pt;
    }
    #buttons{

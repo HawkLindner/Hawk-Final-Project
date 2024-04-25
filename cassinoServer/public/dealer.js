@@ -7,8 +7,8 @@ let dealer = {};
 let shown = document.getElementById("Dcards");
 
 function updateState(){
-        fetch("http://localhost:3000/getDealerState")
-        //fetch("/getDealerState")
+        //fetch("http://localhost:3000/getDealerState")
+        fetch("/getDealerState")
         .then(res => res.json())
         .then((data) => {
             dealer = data;
@@ -17,7 +17,7 @@ function updateState(){
         });
 
 }
-setInterval(updateState, 2000);
+//setInterval(updateState, 2000);
 
 function startGame(){
     printCards();
@@ -33,15 +33,14 @@ function printCards(){
         let img = document.createElement("img");
         const imageUrl = dealer.dealerImg[i];
         const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cassinoServer"));
-        //below is for mac
-        //const trimmedUrl = imageUrl.substring(imageUrl.indexOf("/cards"));
         img.src = trimmedUrl;
         shown.append(img);
     }
     score.innerText = "";
     score.innerText = "Score : " + dealer.dealerSum;
-
-    //still need to calculate hidden sum
+    let winMsg = document.getElementById("endGameMsg");
+    winMsg.innerText = "";
+    winMsg.innerText = dealer.winMsg;
 }
 
 function removeCards() {
