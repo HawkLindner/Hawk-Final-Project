@@ -17,7 +17,7 @@ function updateState(){
         });
 
 }
-//setInterval(updateState, 2000);
+setInterval(updateState, 2000);
 
 function startGame(){
     printCards();
